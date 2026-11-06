@@ -1,5 +1,6 @@
 /**
- * Renders og.html (the social card built from src/data/config.ts) to public/og.png.
+ * Renders og.html (the social card built from src/data/config.ts) to public/og.png,
+ * and og.html?icon to public/apple-touch-icon.png.
  * Usage: npm run og      (re-run whenever name / role / skill groups / projects change)
  * Needs a local Chrome/Edge/Chromium. Override with CHROME_PATH=/path/to/chrome.
  */
@@ -34,25 +35,29 @@ const url = `${server.resolvedUrls.local[0].replace(/\/$/, "")}/og.html`;
 const profile = mkdtempSync(join(tmpdir(), "og-chrome-"));
 
 try {
-  await new Promise((done, fail) => {
-    const p = spawn(
-      chrome,
-      [
-        "--headless=new",
-        "--hide-scrollbars",
-        "--force-device-scale-factor=1",
-        `--user-data-dir=${profile}`,
-        "--window-size=1200,630",
-        "--virtual-time-budget=6000",
-        `--screenshot=${out}`,
-        url,
-      ],
-      { stdio: "ignore" },
-    );
-    p.on("exit", (code) => (code === 0 ? done() : fail(new Error(`Chrome exited with ${code}`))));
-    p.on("error", fail);
-  });
-  console.log(`✓ ${out}`);
+  const shoot = (target, size, file) =>
+    new Promise((done, fail) => {
+      const p = spawn(
+        chrome,
+        [
+          "--headless=new",
+          "--hide-scrollbars",
+          "--force-device-scale-factor=1",
+          `--user-data-dir=${profile}`,
+          `--window-size=${size}`,
+          "--virtual-time-budget=6000",
+          `--screenshot=${file}`,
+          target,
+        ],
+        { stdio: "ignore" },
+      );
+      p.on("exit", (code) => (code === 0 ? done() : fail(new Error(`Chrome exited with ${code}`))));
+      p.on("error", fail);
+    });
+  await shoot(url, "1200,630", out);
+  await shoot(`${url}?icon`, "180,180", join(root, "public", "apple-touch-icon.png"));
+  console.log(`✓ ${out}
+✓ public/apple-touch-icon.png`);
 } finally {
   await server.close();
   rmSync(profile, { recursive: true, force: true });

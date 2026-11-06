@@ -42,3 +42,12 @@ export default function OgCard() {
     </div>
   );
 }
+
+/** 180×180 apple-touch-icon: the brand mark on the page background. */
+export function AppIcon() {
+  return (
+    <div className="flex h-[180px] w-[180px] items-center justify-center bg-bg">
+      <OrbitMark className="h-[120px] w-[120px] text-cyan" />
+    </div>
+  );
+}

@@ -8,7 +8,7 @@ export default function Footer() {
     <footer className="border-t border-line">
       <div className="container-x flex flex-col items-start justify-between gap-6 py-10 sm:flex-row sm:items-center">
         <div className="space-y-1">
-          <p className="text-sm text-ink-2">
+          <p className="text-sm text-ink-2" suppressHydrationWarning>
             © {year} {site.name}
           </p>
           <p className="font-mono text-xs text-ink-3">Designed & engineered in {site.location.split(",")[0]}</p>

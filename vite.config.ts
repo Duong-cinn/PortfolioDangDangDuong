@@ -7,7 +7,7 @@ import { readFileSync } from "fs";
 function contentGuard(): Plugin {
   return {
     name: "content-guard",
-    apply: "build",
+    apply: (_config, env) => env.command === "build" && !env.isSsrBuild,
     buildStart() {
       const file = path.resolve(__dirname, "src/data/config.ts");
       const lines = readFileSync(file, "utf8").split(/\r?\n/);

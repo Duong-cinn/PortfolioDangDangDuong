@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import "../styles/fonts.css";
 import "../index.css";
-import OgCard from "./OgCard";
+import OgCard, { AppIcon } from "./OgCard";
 
-createRoot(document.getElementById("root")!).render(<OgCard />);
+const icon = new URLSearchParams(location.search).has("icon");
+createRoot(document.getElementById("root")!).render(icon ? <AppIcon /> : <OgCard />);

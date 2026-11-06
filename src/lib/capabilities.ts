@@ -17,15 +17,9 @@ export function canRender3D(): boolean {
   if ((nav.hardwareConcurrency ?? 8) <= 2) return false;
   if (new URLSearchParams(window.location.search).has("static")) return false;
 
-  try {
-    const c = document.createElement("canvas");
-    const gl = (c.getContext("webgl2") || c.getContext("webgl")) as WebGLRenderingContext | null;
-    if (!gl) return false;
-    gl.getExtension("WEBGL_lose_context")?.loseContext();
-    return true;
-  } catch {
-    return false;
-  }
+  // Cheap API check only. Creating a throw-away WebGL context here costs as much as the real one;
+  // if WebGL is actually unavailable, the renderer throws and the hook falls back to the static SVG.
+  return "WebGL2RenderingContext" in window || "WebGLRenderingContext" in window;
 }
 
 /** Run `fn` after the load event, when the main thread is idle. Returns a cancel function. */

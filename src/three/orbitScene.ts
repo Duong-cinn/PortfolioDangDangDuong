@@ -18,7 +18,6 @@ import {
   CustomBlending,
   OneFactor,
   ZeroFactor,
-  DirectionalLight,
   EdgesGeometry,
   Group,
   IcosahedronGeometry,
@@ -29,12 +28,11 @@ import {
   Material,
   Mesh,
   MeshBasicMaterial,
-  MeshPhysicalMaterial,
+  MeshMatcapMaterial,
   Object3D,
   OctahedronGeometry,
   PerspectiveCamera,
   PlaneGeometry,
-  PMREMGenerator,
   Points,
   PointsMaterial,
   Raycaster,
@@ -42,12 +40,10 @@ import {
   ShaderMaterial,
   SphereGeometry,
   SRGBColorSpace,
-  Texture,
   TorusGeometry,
   Vector2,
   WebGLRenderer,
 } from "three";
-import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 
 export type Tone = "cyan" | "violet" | "gray" | "dotted";
 export type OrbitGroup = { id: string; tone: Tone; count: number; clickable: boolean };
@@ -148,9 +144,53 @@ function radialTexture(inner: string, size = 128) {
   return t;
 }
 
+/** Give the main thread back between heavy steps (keeps long tasks short → low TBT / good INP). */
+const yieldToMain = () =>
+  new Promise<void>((resolve) => {
+    const sch = (globalThis as { scheduler?: { yield?: () => Promise<void> } }).scheduler;
+    if (sch?.yield) sch.yield().then(resolve);
+    else setTimeout(resolve, 0);
+  });
+
+/**
+ * Hand-painted metal matcap (256²): cheap shader, no env map, no lights, no PMREM pass.
+ * Studio key light top-left, horizon band, cyan rim and a violet bounce.
+ */
+function metalMatcap() {
+  const S = 256;
+  const c = document.createElement("canvas");
+  c.width = c.height = S;
+  const g = c.getContext("2d")!;
+  const radial = (x: number, y: number, r: number, stops: [number, string][]) => {
+    const gr = g.createRadialGradient(x * S, y * S, 0, x * S, y * S, r * S);
+    stops.forEach(([o, col]) => gr.addColorStop(o, col));
+    g.fillStyle = gr;
+    g.fillRect(0, 0, S, S);
+  };
+  radial(0.5, 0.45, 0.62, [[0, "#9aa4b5"], [0.55, "#4a5262"], [1, "#0e1118"]]);
+  g.globalCompositeOperation = "lighter";
+  const band = g.createLinearGradient(0, S * 0.5, 0, S * 0.66);
+  band.addColorStop(0, "rgba(255,255,255,0)");
+  band.addColorStop(0.5, "rgba(210,225,240,0.16)");
+  band.addColorStop(1, "rgba(255,255,255,0)");
+  g.fillStyle = band;
+  g.fillRect(0, 0, S, S);
+  radial(0.34, 0.3, 0.34, [[0, "rgba(255,255,255,0.75)"], [1, "rgba(255,255,255,0)"]]);
+  radial(0.31, 0.26, 0.07, [[0, "rgba(255,255,255,0.95)"], [1, "rgba(255,255,255,0)"]]);
+  radial(0.5, 0.5, 0.5, [[0.8, "rgba(56,217,240,0)"], [0.95, "rgba(56,217,240,0.35)"], [1, "rgba(56,217,240,0)"]]);
+  radial(0.72, 0.8, 0.4, [[0, "rgba(169,155,255,0.22)"], [1, "rgba(169,155,255,0)"]]);
+  const t = new CanvasTexture(c);
+  t.colorSpace = SRGBColorSpace;
+  return t;
+}
+
 /* ───────── scene ───────── */
 
-export function createOrbitScene(opts: OrbitOptions): OrbitController {
+/**
+ * Builds the scene in small steps (yielding in between) and compiles shaders asynchronously.
+ * Resolves to null if `token.cancelled` became true meanwhile (everything is disposed).
+ */
+export async function createOrbitScene(opts: OrbitOptions, token: { cancelled: boolean } = { cancelled: false }): Promise<OrbitController | null> {
   const { canvas, host, slot, groups } = opts;
   const coarse = window.matchMedia("(pointer: coarse)").matches;
   const width0 = host.clientWidth;
@@ -159,6 +199,7 @@ export function createOrbitScene(opts: OrbitOptions): OrbitController {
   const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
   renderer.setClearColor(0x000000, 0);
   let dprCap = coarse ? 1.5 : 2;
+  await yieldToMain();
 
   const scene = new Scene();
   const camera = new PerspectiveCamera(FOV, 1, 0.1, 50);
@@ -170,14 +211,9 @@ export function createOrbitScene(opts: OrbitOptions): OrbitController {
     gray: cssColor("ink-2"),
     dotted: cssColor("ink-3"),
     ink: cssColor("ink-1"),
-    metal: cssColor("metal-1"),
   };
 
-  // Environment for the metal core only (generated once, no HDR download).
-  const pmrem = new PMREMGenerator(renderer);
-  const envTex = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-
-  const disposables: { dispose: () => void }[] = [envTex, pmrem];
+  const disposables: { dispose: () => void }[] = [];
   const track = <T extends { dispose: () => void }>(x: T) => (disposables.push(x), x);
 
   /* rig = follows layout/pointer/scroll; system = the object itself */
@@ -187,28 +223,9 @@ export function createOrbitScene(opts: OrbitOptions): OrbitController {
   rig.add(system);
   scene.add(rig);
 
-  // lights (only the physical core reacts)
-  const key = new DirectionalLight(0xffffff, 1.4);
-  key.position.set(3, 4, 5);
-  const rim = new DirectionalLight(colors.cyan, 2.2);
-  rim.position.set(-4, 1, -3);
-  scene.add(key, rim);
-
   /* ── core ── */
   const coreGeo = track(new IcosahedronGeometry(0.62, quality === 0 ? 8 : 16));
-  const coreMat = track(
-    new MeshPhysicalMaterial({
-      color: colors.metal,
-      metalness: 0.9,
-      roughness: 0.2,
-      clearcoat: 1,
-      clearcoatRoughness: 0.12,
-      iridescence: 0.25,
-      iridescenceIOR: 1.4,
-      envMap: envTex,
-      envMapIntensity: 1.1,
-    }),
-  );
+  const coreMat = track(new MeshMatcapMaterial({ matcap: track(metalMatcap()) }));
   const core = new Mesh(coreGeo, coreMat);
   system.add(core);
 
@@ -272,6 +289,8 @@ export function createOrbitScene(opts: OrbitOptions): OrbitController {
   halo.position.z = -1.2;
   halo.renderOrder = -1;
   rig.add(halo);
+
+  await yieldToMain();
 
   /* ── rings ── */
   const dotTex = track(radialTexture("rgba(255,255,255,1)", 32));
@@ -409,6 +428,8 @@ export function createOrbitScene(opts: OrbitOptions): OrbitController {
     system.add(cometTilt);
   }
 
+  await yieldToMain();
+
   /* ── particles (world space, whole hero) ── */
   const P_MAX = quality === 0 ? 40 : quality === 1 ? 70 : 110;
   let pCount = P_MAX;
@@ -455,6 +476,25 @@ export function createOrbitScene(opts: OrbitOptions): OrbitController {
   lines.renderOrder = -2;
   lines.visible = linesOn;
   scene.add(lines);
+
+  // Compile shaders off the critical path (parallel compile where KHR_parallel_shader_compile exists).
+  try {
+    await renderer.compileAsync(scene, camera);
+  } catch {
+    /* falls back to compiling on first render */
+  }
+  await yieldToMain();
+  if (token.cancelled) {
+    scene.traverse((o) => {
+      const m = o as Mesh;
+      m.geometry?.dispose?.();
+      const mat = m.material as Material | Material[] | undefined;
+      (Array.isArray(mat) ? mat : mat ? [mat] : []).forEach((x) => x.dispose());
+    });
+    disposables.forEach((d) => d.dispose());
+    renderer.dispose();
+    return null;
+  }
 
   /* ───────── layout ───────── */
   const view = { w: 1, h: 1, vw: 1, vh: 1, cx: 0, cy: 0, scale: 1 };
@@ -630,7 +670,7 @@ export function createOrbitScene(opts: OrbitOptions): OrbitController {
         r.nodeScale = next;
       }
     });
-    haloMat.uniforms.uOpacity.value = 0.32 * coreK;
+    haloMat.uniforms.uOpacity.value = 0.24 * coreK;
 
     // satellites
     if (satellites) {
@@ -813,7 +853,6 @@ export function createOrbitScene(opts: OrbitOptions): OrbitController {
       (Array.isArray(mat) ? mat : mat ? [mat] : []).forEach((x) => x.dispose());
     });
     disposables.forEach((d) => d.dispose());
-    (envTex as Texture).dispose();
     renderer.dispose();
   }
 

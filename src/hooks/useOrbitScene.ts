@@ -23,8 +23,8 @@ export function useOrbitScene({ host, canvas, slot, fade }: Refs) {
   const ctrl = useRef<OrbitController | null>(null);
 
   useEffect(() => {
-    if (!canRender3D()) return;
     let cancelled = false;
+    const token = { cancelled: false };
     let io: IntersectionObserver | undefined;
 
     const load = async () => {
@@ -32,7 +32,7 @@ export function useOrbitScene({ host, canvas, slot, fade }: Refs) {
       try {
         const { createOrbitScene } = await import("@/three/orbitScene");
         if (cancelled || !host.current || !canvas.current || !slot.current) return;
-        ctrl.current = createOrbitScene({
+        const controller = await createOrbitScene({
           canvas: canvas.current,
           host: host.current,
           slot: slot.current,
@@ -48,7 +48,12 @@ export function useOrbitScene({ host, canvas, slot, fade }: Refs) {
           onSelect: (id) => {
             window.location.hash = `skill-${id}`;
           },
-        });
+        }, token);
+        if (cancelled || !controller) {
+          controller?.dispose();
+          return;
+        }
+        ctrl.current = controller;
       } catch {
         if (!cancelled) setStatus("static");
       }
@@ -56,7 +61,7 @@ export function useOrbitScene({ host, canvas, slot, fade }: Refs) {
 
     const cancelIdle = whenIdleAfterLoad(() => {
       const el = host.current;
-      if (!el) return;
+      if (!el || !canRender3D()) return;
       io = new IntersectionObserver(([entry]) => {
         if (entry.isIntersecting) {
           io?.disconnect();
@@ -68,6 +73,7 @@ export function useOrbitScene({ host, canvas, slot, fade }: Refs) {
 
     return () => {
       cancelled = true;
+      token.cancelled = true;
       cancelIdle();
       io?.disconnect();
       ctrl.current?.dispose();

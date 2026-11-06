@@ -11,24 +11,33 @@
     <meta name="author" content="Đặng Đăng Dương" />
     <meta name="theme-color" content="#0A0C10" />
     <meta name="color-scheme" content="dark" />
-    <!-- TODO(phase 5): canonical URL, favicon set, JSON-LD -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
     <meta property="og:title" content="Đặng Đăng Dương — Frontend & AI Engineer" />
     <meta property="og:description" content="Creative engineering at the orbit of interfaces and AI." />
     <meta property="og:type" content="website" />
-    <!-- og.png is generated from the hero orbit: `npm run og`. TODO(phase 5): make URLs absolute once the domain is known. -->
+    <!-- og.png is generated from the hero orbit: `npm run og`. Absolute URLs need site.url (config.ts). -->
     <meta property="og:image" content="/og.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Đặng Đăng Dương — Frontend & AI Engineer, with the Digital Orbit skill diagram" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content="/og.png" />
+    <!--head-->
     <script>
-      document.documentElement.classList.add("js");
+      // Enable reveal animations only when JS runs; if the app never hydrates, show everything.
+      (function (d) {
+        d.classList.add("js");
+        setTimeout(function () {
+          if (!d.dataset.hydrated) d.classList.remove("js");
+        }, 4000);
+      })(document.documentElement);
     </script>
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root"><!--app--></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
