@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, Search, X } from "lucide-react";
 import { site } from "@/data/config";
 import { visibleSections } from "@/data/sections";
 import { useActiveSection } from "@/hooks/useActiveSection";
 import { cn } from "@/lib/utils";
 import { OrbitMark } from "./OrbitMark";
+import { openPalette } from "@/lib/palette";
 
 const observedIds = ["top", ...visibleSections.map((s) => s.id)];
 
@@ -14,6 +15,11 @@ export default function Navbar() {
   const panelId = useId();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const [mod, setMod] = useState("Ctrl");
+
+  useEffect(() => {
+    if (/Mac|iPhone|iPad/i.test(navigator.platform || navigator.userAgent)) setMod("⌘");
+  }, []);
 
   const close = useCallback((returnFocus = false) => {
     setOpen(false);
@@ -76,7 +82,7 @@ export default function Navbar() {
             </span>
           </a>
 
-          <nav aria-label="Primary" className="hidden md:block">
+          <nav aria-label="Primary" className="ml-auto hidden md:block">
             <ul className="flex items-center gap-1">
               {visibleSections.map((s) => {
                 const isActive = active === s.id;
@@ -104,6 +110,17 @@ export default function Navbar() {
               })}
             </ul>
           </nav>
+
+          <button
+            type="button"
+            onClick={openPalette}
+            aria-label="Open quick actions"
+            aria-keyshortcuts="Control+K Meta+K"
+            className="js-only -ml-3 hidden h-9 items-center gap-1.5 rounded-md border border-line px-2.5 font-mono text-xs text-ink-3 transition-colors duration-fast hover:border-ink-3/60 hover:text-ink md:inline-flex"
+          >
+            <Search className="h-3.5 w-3.5" aria-hidden />
+            <kbd className="font-mono">{mod === "⌘" ? "⌘K" : "Ctrl K"}</kbd>
+          </button>
 
           <button
             ref={buttonRef}

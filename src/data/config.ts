@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import { Compass, Dumbbell, Film, Mail, Mountain } from "lucide-react";
+import { Compass, Dumbbell, Film, Github, Mail, Mountain } from "lucide-react";
 
 export type IconComponent = ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" | "false" }>;
 
@@ -77,20 +77,23 @@ export const site = {
   name: "Đặng Đăng Dương",
   /** Used in the navbar mark. */
   shortName: "Dương",
-  /** Public URL once deployed — used for canonical / OG tags. TODO(content) */
-  url: "",
+  /** Public URL once deployed — used for canonical / OG tags. */
+  url: "", // TODO(content): set after the first Vercel deploy
   role: "Frontend & AI Engineer",
   /** Shown under the role; also the label of the orbit core. */
-  focus: "Information Computer Engineering student · VNU-IS", // TODO(content): confirm official English program name
+  focus: "Information Computer Engineering student · VNU-IS",
   tagline: "I build interfaces that think — clean frontend craft meeting practical AI.", // SAMPLE
   availability: "Open to AI Engineering & design roles",
   location: "Ninh Bình, Việt Nam",
   timezone: "UTC+7",
-  /** Approximate coordinates of Ninh Bình city. TODO(content): confirm. */
+  /** IANA zone for the live local clock in the hero. Empty → clock hidden. */
+  timeZone: "Asia/Ho_Chi_Minh",
+  /** Approximate coordinates of Ninh Bình city. */
   coords: "20.25°N · 105.97°E",
   email: "dangduong17092005@gmail.com",
   altEmail: "23070004@vnu.edu.vn",
-  cvUrl: "", // TODO(content): put the real PDF in /public and set e.g. "/cv-dang-dang-duong.pdf"
+  /** Empty → CV buttons hidden. Put the PDF in /public and set e.g. "/cv-dang-dang-duong.pdf". */
+  cvUrl: "",
 };
 
 export const about = {
@@ -119,6 +122,7 @@ export const skillGroups: SkillGroup[] = [
     items: [
       { name: "React" },
       { name: "TypeScript" },
+      { name: "Next.js" },
       { name: "Tailwind CSS" },
       { name: "Three.js" },
       { name: "HTML & CSS" },
@@ -133,7 +137,8 @@ export const skillGroups: SkillGroup[] = [
       { name: "Python" },
       { name: "PyTorch" },
       { name: "scikit-learn" },
-      { name: "Pandas" },
+      { name: "Pandas & NumPy" },
+      { name: "OpenCV" },
     ],
   },
   {
@@ -144,6 +149,7 @@ export const skillGroups: SkillGroup[] = [
     items: [
       { name: "Node.js" },
       { name: "Express" },
+      { name: "FastAPI" },
       { name: "PostgreSQL" },
     ],
   },
@@ -152,19 +158,21 @@ export const skillGroups: SkillGroup[] = [
     label: "Languages & tools",
     tone: "dotted",
     items: [
-      { name: "English (B2)" },
+      { name: "English (B2 · Aptis)" },
       { name: "Vietnamese (native)" },
-      { name: "Git" }, // SAMPLE
+      { name: "Git & GitHub" }, // SAMPLE
       { name: "Figma" }, // SAMPLE
+      { name: "Docker" }, // SAMPLE
     ],
   },
 ];
 
+// SAMPLE — invented to preview the layout (no real work experience yet). Delete the entry to hide the lane.
 export const experience: Experience[] = [
   {
-    role: "Frontend Developer Intern", // SAMPLE — exact role title (you wrote "Dev")
-    org: "CCMM", // TODO(content): full organization name
-    period: "2 months", // TODO(content): month/year range
+    role: "Frontend Developer Intern", // SAMPLE
+    org: "CCMM", // SAMPLE
+    period: "Jul 2025 — Aug 2025", // SAMPLE
     // SAMPLE — bullets
     bullets: [
       "Built and shipped reusable UI components for an internal web app in React and TypeScript.",
@@ -176,10 +184,10 @@ export const experience: Experience[] = [
 
 export const education: Education[] = [
   {
-    school: "VNU International School (VNU-IS)", // TODO(content): confirm official name
+    school: "International School, Vietnam National University, Hanoi (VNU-IS)",
     program: "Information Computer Engineering",
     period: "2023 — 2027",
-    gpa: "3.0", // TODO(content): confirm scale (/4?)
+    gpa: "3.0 / 4",
   },
 ];
 
@@ -190,30 +198,37 @@ export const projects: Project[] = [
     problem: "A personal site where the hero object is generated from my real skill data instead of decoration.",
     role: "Design & development",
     stack: ["React", "TypeScript", "Three.js", "Tailwind"],
-    result: "Initial JS ≈ 65 kB gzip; the 3D scene loads lazily and falls back to a static SVG.",
+    result: "Initial JS ≈ 73 kB gzip; the 3D scene loads lazily and falls back to a static SVG.",
   },
   {
     title: "Study Buddy AI", // SAMPLE
     problem: "Students lose time searching long lecture PDFs for the one paragraph they need.",
     role: "Full-stack & ML",
-    stack: ["Python", "PyTorch", "React", "Node.js"],
+    stack: ["Python", "FastAPI", "PyTorch", "React"],
     result: "Semantic search over course notes with cited answers.", // SAMPLE
+  },
+  {
+    title: "FormCheck", // SAMPLE
+    problem: "Training alone at the gym, it's hard to know whether a squat or push-up rep is actually clean.",
+    role: "Computer vision & frontend",
+    stack: ["Python", "OpenCV", "PyTorch", "TypeScript"],
+    result: "Counts reps from a webcam and flags shallow depth in real time.", // SAMPLE
   },
   {
     title: "Route Log", // SAMPLE
     problem: "Climbers track sessions in notes apps and can't see progress over time.",
     role: "Frontend",
-    stack: ["React", "TypeScript", "Charts"],
+    stack: ["Next.js", "TypeScript", "PostgreSQL"],
   },
 ];
 
-// SAMPLE — replace with your real certificate / awards (or delete to hide the section)
 export const certificates: Certificate[] = [
-  { name: "English — CEFR B2", issuer: "Issuing body", year: "2024" }, // TODO(content): real issuer + year
-  { name: "Student project showcase — finalist", issuer: "VNU International School", year: "2025", kind: "achievement" },
+  { name: "English — CEFR B2 (Aptis)", issuer: "British Council", year: "2024" },
+  { name: "Student project showcase — finalist", issuer: "VNU International School", year: "2025", kind: "achievement" }, // SAMPLE
 ];
 
 export const socials: Social[] = [
   { name: "Email", href: `mailto:${site.email}`, Icon: Mail },
-  // TODO(content): GitHub, LinkedIn — e.g. { name: "GitHub", href: "https://github.com/…", Icon: Github }
+  { name: "GitHub", href: "https://github.com/Duong-cinn", Icon: Github },
+  // LinkedIn: add { name: "LinkedIn", href: "https://www.linkedin.com/in/…", Icon: Linkedin } when ready
 ];

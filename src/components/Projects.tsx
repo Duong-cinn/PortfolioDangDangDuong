@@ -1,7 +1,8 @@
-import type { CSSProperties } from "react";
+import { useRef, type CSSProperties } from "react";
 import { ArrowUpRight, Github } from "lucide-react";
 import { filled, has, projects, type Project } from "@/data/config";
 import { sectionIndex } from "@/data/sections";
+import { useTilt } from "@/hooks/useTilt";
 import { hasFeaturedProject } from "@/lib/layout";
 import { cn } from "@/lib/utils";
 import SectionHeading from "./SectionHeading";
@@ -39,13 +40,14 @@ export default function Projects() {
 
 function ProjectCard({ project: p, index, featured }: { project: Project; index: number; featured: boolean }) {
   const code = `S-${String(index + 1).padStart(2, "0")}`;
+  const ref = useRef<HTMLElement>(null);
+  useTilt(ref);
   return (
     <article
-      className={cn(
-        "group flex h-full flex-col overflow-hidden transition-[transform,border-color] duration-base ease-out-expo hover:-translate-y-0.5 hover:border-cyan/40",
-        cardClass,
-      )}
+      ref={ref}
+      className={cn("tilt group relative flex h-full flex-col overflow-hidden hover:border-cyan/40", cardClass)}
     >
+      <span aria-hidden className="tilt-glare" />
       <div className={cn("relative overflow-hidden bg-elevated", featured ? "aspect-[21/9]" : "aspect-[16/10]")}>
         {filled(p.image) ? (
           <img

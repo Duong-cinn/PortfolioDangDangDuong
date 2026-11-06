@@ -6,6 +6,7 @@ import { toneClass } from "@/lib/tone";
 import { cn } from "@/lib/utils";
 import { ButtonLink } from "./ui/Button";
 import OrbitFallback from "./hero/OrbitFallback";
+import LocalTime from "./LocalTime";
 
 const stagger = (i: number) => ({ "--i": i }) as CSSProperties;
 
@@ -45,10 +46,16 @@ export default function Hero() {
                 Tràng An karst · Ninh Bình
               </span>
             </span>
-            <span aria-hidden className="h-px w-6 bg-line" />
+            <span aria-hidden className="hidden h-px w-6 bg-line sm:block" />
             <span>
               {site.location} · {site.timezone}
             </span>
+            {filled(site.timeZone) && (
+              <>
+                <span aria-hidden className="js-only hidden h-px w-6 bg-line sm:block" />
+                <LocalTime timeZone={site.timeZone} />
+              </>
+            )}
           </p>
 
           {/* h1 is intentionally NOT a .reveal — it is the LCP element and must paint immediately. */}

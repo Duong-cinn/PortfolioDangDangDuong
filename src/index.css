@@ -138,6 +138,11 @@
 }
 
 @layer utilities {
+  /* Enhancements that are meaningless without JS (live clock, ⌘K hint). */
+  html:not(.js) .js-only {
+    display: none !important;
+  }
+
   /* Reveal is gated by `html.js` (set inline in index.html) so content stays visible without JS. */
   .js .reveal {
     opacity: 0;
@@ -175,6 +180,98 @@
 
   .js .reveal-line.is-visible::before {
     transform: scaleY(1);
+  }
+
+  /* Command palette (native <dialog>): fade backdrop, drop panel in. */
+  .palette {
+    max-height: none;
+    height: 100%;
+    inset: 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .palette[open] .palette-panel {
+      animation: palette-in 260ms var(--ease-out-expo);
+    }
+
+    .palette[open]::backdrop {
+      animation: palette-fade 200ms ease-out;
+    }
+  }
+
+  @keyframes palette-in {
+    from {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.98);
+    }
+  }
+
+  @keyframes palette-fade {
+    from {
+      opacity: 0;
+    }
+  }
+
+  /* Project cards: pointer tilt + soft glare (variables written by useTilt). */
+  .tilt {
+    transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(var(--lift, 0px));
+    transition:
+      transform 500ms var(--ease-out-expo),
+      border-color var(--dur-fast, 160ms) ease-out;
+  }
+
+  .tilt:hover {
+    --lift: -2px;
+  }
+
+  .tilt.is-tilting {
+    transition:
+      transform 120ms linear,
+      border-color 160ms ease-out;
+  }
+
+  .tilt-glare {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    border-radius: inherit;
+    opacity: 0;
+    background: radial-gradient(22rem circle at var(--gx, 50%) var(--gy, 0%), rgb(var(--cyan) / 0.09), transparent 60%);
+    transition: opacity 300ms ease-out;
+  }
+
+  .tilt.is-tilting .tilt-glare {
+    opacity: 1;
+  }
+
+  /* Journey = climbing route. The list stays put; its rope is uncovered top → bottom,
+     each hold "sets" with a small twist when its entry reveals. */
+  .js .reveal.route {
+    opacity: 1;
+    transform: none;
+  }
+
+  .route-hold {
+    transform: translateX(-50%) rotate(var(--r, 0deg));
+  }
+
+  .js .route-rope {
+    clip-path: inset(0 0 100% 0);
+    transition: clip-path 1400ms var(--ease-out-expo) 120ms;
+  }
+
+  .js .route.is-visible .route-rope {
+    clip-path: inset(0 0 0 0);
+  }
+
+  .js .reveal .route-hold {
+    transform: translateX(-50%) rotate(calc(var(--r, 0deg) - 60deg)) scale(0.4);
+    transition: transform 700ms var(--ease-out-expo) calc(160ms + var(--i, 0) * var(--stagger));
+  }
+
+  .js .reveal.is-visible .route-hold {
+    transform: translateX(-50%) rotate(var(--r, 0deg));
   }
 
   /* Children of a revealed block appear one after another. */
@@ -247,6 +344,14 @@
 
     .js .reveal-line::before {
       transform: none;
+    }
+
+    .js .route-rope {
+      clip-path: none;
+    }
+
+    .js .reveal .route-hold {
+      transform: translateX(-50%) rotate(var(--r, 0deg));
     }
 
     .js .stagger-children > * {

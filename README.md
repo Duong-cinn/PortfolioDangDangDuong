@@ -13,6 +13,8 @@ The hero is an interactive 3D object generated from real content: **the core is 
 - **Fallbacks**: a static, data-driven SVG of the same orbit is used for reduced motion, no WebGL, Save-Data, low-power devices, and automatically when the frame rate stays too low.
 - **Prerendered HTML**: all content is readable with JavaScript disabled, and the `h1` is the LCP element painted straight from HTML.
 - **Hide-when-empty**: any section without data disappears from the page *and* the navigation.
+- **Personal details**: a live Ninh Bình clock next to the coordinates (status dot = waking hours), the Journey section drawn as a climbing route whose rope uncovers on scroll, and project cards with a subtle pointer tilt + glare (fine pointers only).
+- **Quick actions**: `Ctrl/⌘ + K` opens a command palette (native `<dialog>`): jump to any section or skill group (searchable by skill name), copy the email, open CV / socials.
 - **Motion budget**: native scrolling only. CSS reveals, a composited water drift, CSS scroll-driven parallax where supported, and everything off under `prefers-reduced-motion`.
 
 | Lighthouse (mobile, median of 3) | Score |
@@ -22,7 +24,7 @@ The hero is an interactive 3D object generated from real content: **the core is 
 | Best Practices | 100 |
 | SEO | 100 |
 
-LCP ≈ 2.0 s · CLS 0 · TBT < 120 ms. Initial JS ≈ 69 kB gzip, lazy 3D chunk ≈ 126 kB gzip.
+LCP ≈ 2.0 s · CLS 0 · TBT < 120 ms. Initial JS ≈ 73 kB gzip, lazy 3D chunk ≈ 126 kB gzip.
 
 ## Stack
 
@@ -73,7 +75,7 @@ QA URL flags: `?static` forces the SVG fallback; `?hq` disables automatic qualit
 
 Any static host works. The output is `dist/`.
 
-- **Vercel**: framework preset *Vite*, build `npm run build`, output `dist`.
+- **Vercel** (configured): import the GitHub repo at vercel.com/new — [`vercel.json`](vercel.json) already sets the build, output, immutable caching for `/assets/*` and basic security headers. After the first deploy, put the URL in `site.url` and push again.
 - **Netlify**: build `npm run build`, publish `dist`.
 
 `public/404.html` is served for unknown paths by both.
@@ -84,10 +86,11 @@ Any static host works. The output is `dist/`.
 src/
 ├─ data/config.ts        # all personal content (edit me)
 ├─ data/sections.ts      # section order + hide-when-empty rules
-├─ components/           # Navbar, Hero, About, Skills, Trajectory, Projects, Certificates, Contact, Footer, KarstDivider
+├─ components/           # Navbar, Hero, About, Skills, Trajectory, Projects, Certificates, Contact, Footer, KarstDivider,
+│                        # CommandPalette, LocalTime
 ├─ components/hero/      # OrbitFallback (static SVG orbit)
 ├─ three/orbitScene.ts   # the lazy three.js scene
-├─ hooks/                # useOrbitScene, useReveal, useActiveSection
+├─ hooks/                # useOrbitScene, useReveal, useActiveSection, useTilt
 ├─ og/                   # social card + touch icon (dev-only page)
 ├─ entry-server.tsx      # prerender entry
 └─ index.css             # design tokens (CSS variables) + motion
