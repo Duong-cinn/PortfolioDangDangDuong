@@ -12,6 +12,10 @@ export default defineConfig({
     },
   },
   plugins: [react()],
+  build: {
+    // The lazy three.js chunk (orbitScene) is ~500 kB raw / ~130 kB gzip by design; everything else stays small.
+    chunkSizeWarningLimit: 560,
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

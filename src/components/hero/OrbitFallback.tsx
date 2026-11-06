@@ -51,8 +51,9 @@ function RingPath({ ring, half, clipId }: { ring: Ring; half: "back" | "front"; 
   );
 }
 
-export default function OrbitFallback({ className }: { className?: string }) {
+export default function OrbitFallback({ className, active = null }: { className?: string; active?: string | null }) {
   const uid = useId().replace(/:/g, "");
+  const ringOpacity = (id: string) => (active === null || active === id ? 1 : 0.2);
 
   return (
     <svg viewBox="0 0 400 400" className={cn("h-full w-full overflow-visible", className)} aria-hidden>
@@ -83,7 +84,7 @@ export default function OrbitFallback({ className }: { className?: string }) {
 
       {/* back halves of rings + back nodes */}
       {rings.map((ring, i) => (
-        <g key={`b${i}`}>
+        <g key={`b${i}`} style={{ opacity: ringOpacity(ring.group.id), transition: "opacity 300ms" }}>
           <RingPath ring={ring} half="back" clipId={`${uid}-r${i}`} />
           <g transform={`rotate(${ring.rot} ${C} ${C})`}>
             {nodePositions(ring, ring.group.items.length, i * 0.9)
@@ -106,7 +107,7 @@ export default function OrbitFallback({ className }: { className?: string }) {
 
       {/* front halves of rings + front nodes */}
       {rings.map((ring, i) => (
-        <g key={`f${i}`}>
+        <g key={`f${i}`} style={{ opacity: ringOpacity(ring.group.id), transition: "opacity 300ms" }}>
           <RingPath ring={ring} half="front" clipId={`${uid}-r${i}`} />
           <g transform={`rotate(${ring.rot} ${C} ${C})`}>
             {nodePositions(ring, ring.group.items.length, i * 0.9)

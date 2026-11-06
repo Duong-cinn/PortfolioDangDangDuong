@@ -23,7 +23,11 @@ export default function Skills() {
         {groups.map((g, i) => (
           <article
             key={g.id}
-            className={cn("reveal relative overflow-hidden p-6", cardClass)}
+            id={`skill-${g.id}`}
+            className={cn(
+              "reveal relative overflow-hidden p-6 transition-[border-color,box-shadow] duration-slow target:border-cyan/60 target:shadow-glow",
+              cardClass,
+            )}
             style={{ "--i": i } as CSSProperties}
           >
             <span aria-hidden className={cn("absolute inset-y-0 left-0 w-0.5", toneClass[g.tone].bg)} />
