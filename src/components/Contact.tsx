@@ -32,12 +32,12 @@ export default function Contact() {
       <div className="reveal flex flex-col gap-6" style={{ "--i": 1 } as CSSProperties}>
         <a
           href={`mailto:${site.email}`}
-          className="group inline-flex max-w-full items-center gap-3 self-start break-all font-display text-h3 font-medium text-ink sm:text-h2"
+          className="group inline-flex max-w-full items-center gap-2 self-start font-display text-[clamp(1.05rem,4.6vw,1.5rem)] font-medium text-ink [overflow-wrap:anywhere] sm:gap-3 sm:text-h2"
         >
           <span className="bg-gradient-to-r from-cyan to-cyan bg-[length:0%_1px] bg-left-bottom bg-no-repeat pb-1 transition-[background-size] duration-slow ease-out-expo group-hover:bg-[length:100%_1px]">
             {site.email}
           </span>
-          <ArrowUpRight className="h-6 w-6 shrink-0 text-cyan transition-transform duration-base ease-out-expo group-hover:-translate-y-1 group-hover:translate-x-1" aria-hidden />
+          <ArrowUpRight className="h-5 w-5 shrink-0 text-cyan sm:h-6 sm:w-6 transition-transform duration-base ease-out-expo group-hover:-translate-y-1 group-hover:translate-x-1" aria-hidden />
         </a>
 
         <div className="flex flex-wrap items-center gap-3">

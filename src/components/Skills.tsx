@@ -35,10 +35,11 @@ export default function Skills() {
               {g.label}
               <span className="font-mono text-xs font-normal text-ink-3">{String(g.items.length).padStart(2, "0")}</span>
             </h3>
-            <ul className="mt-5 flex flex-wrap gap-2">
-              {g.items.map(({ name, Icon }) => (
+            <ul className="stagger-children mt-5 flex flex-wrap gap-2">
+              {g.items.map(({ name, Icon }, j) => (
                 <li
                   key={name}
+                  style={{ "--j": j } as CSSProperties}
                   className="inline-flex items-center gap-2 rounded-md border border-line bg-bg/40 px-2.5 py-1.5 text-sm text-ink-2"
                 >
                   {Icon && <Icon className="h-4 w-4 text-ink-3" aria-hidden />}

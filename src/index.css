@@ -177,6 +177,52 @@
     transform: scaleY(1);
   }
 
+  /* Children of a revealed block appear one after another. */
+  .js .stagger-children > * {
+    opacity: 0;
+    transform: translateY(6px);
+    transition:
+      opacity 400ms var(--ease-out-expo),
+      transform 400ms var(--ease-out-expo);
+    transition-delay: calc(220ms + var(--j, 0) * 45ms);
+  }
+
+  .js .is-visible .stagger-children > * {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Karst divider: water drift (composited) + scroll-driven parallax (progressive enhancement). */
+  @media (prefers-reduced-motion: no-preference) {
+    /* starts only once the divider has been on screen */
+    .is-visible .wave-drift {
+      animation: wave-drift 48s linear infinite;
+    }
+
+    @supports (animation-timeline: view()) {
+      .karst-parallax {
+        animation: karst-rise linear both;
+        animation-timeline: view();
+        animation-range: entry 0% exit 100%;
+      }
+    }
+  }
+
+  @keyframes wave-drift {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  @keyframes karst-rise {
+    from {
+      transform: translateY(18px);
+    }
+    to {
+      transform: translateY(-10px);
+    }
+  }
+
   /* Hero intro: plays on load (no observer needed), never on the h1 (LCP). */
   @media (prefers-reduced-motion: no-preference) {
     .hero-in {
@@ -200,6 +246,11 @@
     }
 
     .js .reveal-line::before {
+      transform: none;
+    }
+
+    .js .stagger-children > * {
+      opacity: 1;
       transform: none;
     }
 

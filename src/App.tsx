@@ -8,6 +8,7 @@ import Projects from "@/components/Projects";
 import Certificates from "@/components/Certificates";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
+import KarstDivider from "@/components/KarstDivider";
 import { visibleSections, type SectionId } from "@/data/sections";
 import { useReveal } from "@/hooks/useReveal";
 
@@ -27,6 +28,7 @@ export default function App() {
       <Navbar />
       <main id="main" tabIndex={-1} className="flex-1 outline-none">
         <Hero />
+        <KarstDivider />
         {visibleSections.map(({ id }) => {
           const Section = registry[id];
           return <Section key={id} />;

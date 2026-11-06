@@ -10,6 +10,8 @@ import { Tag } from "./ui/Tag";
 /** Projects = the satellites of the hero orbit. Hidden when `projects` is empty. */
 export default function Projects() {
   if (!has(projects)) return null;
+  // Featured (2 columns) only when it fills the 3-column grid exactly: 2, 5, 8… projects.
+  const featured = (projects.length + 1) % 3 === 0;
 
   return (
     <section id="projects" aria-labelledby="projects-title" className="section-y container-x">
@@ -24,10 +26,10 @@ export default function Projects() {
         {projects.map((p, i) => (
           <li
             key={p.title}
-            className={cn("reveal", i === 0 && projects.length > 2 && "lg:col-span-2")}
+            className={cn("reveal", featured && i === 0 && "lg:col-span-2")}
             style={{ "--i": i } as CSSProperties}
           >
-            <ProjectCard project={p} index={i} featured={i === 0 && projects.length > 2} />
+            <ProjectCard project={p} index={i} featured={featured && i === 0} />
           </li>
         ))}
       </ul>
