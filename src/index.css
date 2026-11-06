@@ -1,0 +1,171 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ───────────────────────────────────────────────────────────
+   DIGITAL ORBIT — design tokens (dark only)
+   Colors are RGB channels → use as rgb(var(--x) / a) or Tailwind `bg-bg/80`.
+   Contrast (WCAG 2.x) vs --bg / --surface / --elevated:
+     ink-1 17.29 / 16.27 / 14.90 · ink-2 10.45 / 9.83 / 9.00 · ink-3 6.48 / 6.10 / 5.59
+     cyan 11.51 / 10.84 / 9.92  · violet 8.22 / 7.74 / 7.08
+   ─────────────────────────────────────────────────────────── */
+@layer base {
+  :root {
+    color-scheme: dark;
+
+    /* surfaces */
+    --bg: 10 12 16;          /* #0A0C10 */
+    --surface: 17 20 27;     /* #11141B */
+    --elevated: 25 29 38;    /* #191D26 */
+    --line: 42 48 60;        /* #2A303C — decorative only */
+
+    /* text */
+    --ink-1: 238 241 246;    /* #EEF1F6 */
+    --ink-2: 182 190 202;    /* #B6BECA */
+    --ink-3: 140 149 165;    /* #8C95A5 */
+
+    /* accents — cyan = interactive/primary, violet = AI/secondary */
+    --cyan: 56 217 240;      /* #38D9F0 */
+    --violet: 169 155 255;   /* #A99BFF */
+    --danger: 255 107 122;   /* #FF6B7A */
+    --success: 74 222 154;   /* #4ADE9A */
+
+    /* 3D / metal material */
+    --metal-1: 201 210 222;  /* #C9D2DE */
+    --metal-2: 94 104 120;   /* #5E6878 */
+
+    /* fluid type */
+    --fs-display: clamp(2.5rem, 1.6rem + 4.2vw, 5.5rem);
+    --fs-h2: clamp(1.875rem, 1.4rem + 2vw, 3rem);
+    --fs-h3: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+    --fs-body: clamp(1rem, 0.96rem + 0.2vw, 1.125rem);
+
+    /* elevation (only two levels) */
+    --elev-1: inset 0 1px 0 rgb(255 255 255 / 0.04), 0 8px 24px rgb(0 0 0 / 0.35);
+    --glow-cyan: 0 0 0 1px rgb(var(--cyan) / 0.5), 0 0 24px rgb(var(--cyan) / 0.25);
+
+    /* motion */
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --dur-reveal: 600ms;
+    --stagger: 70ms;
+
+    /* layout */
+    --header-h: 64px;
+    --section-y: clamp(4.5rem, 3rem + 5vw, 8rem);
+  }
+
+  * {
+    @apply border-line;
+  }
+
+  html {
+    scroll-padding-top: calc(var(--header-h) + 16px);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  body {
+    @apply bg-bg text-ink font-sans text-body antialiased;
+    font-feature-settings: "ss01", "cv11";
+    /* one cheap ambient glow, painted once */
+    background-image:
+      radial-gradient(60rem 40rem at 85% -10%, rgb(var(--violet) / 0.07), transparent 60%),
+      radial-gradient(50rem 30rem at -10% 10%, rgb(var(--cyan) / 0.04), transparent 60%);
+    background-repeat: no-repeat;
+  }
+
+  /* subtle film grain — fixed layer, never repaints on scroll */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  #root {
+    position: relative;
+    z-index: 1;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display font-semibold text-ink;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background: rgb(var(--cyan) / 0.3);
+    color: rgb(var(--ink-1));
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(var(--cyan));
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+}
+
+@layer components {
+  .container-x {
+    @apply mx-auto w-full max-w-container px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-y {
+    padding-block: var(--section-y);
+  }
+
+  .label-mono {
+    @apply font-mono text-label uppercase text-ink-3;
+  }
+
+  .link-underline {
+    @apply underline decoration-ink-3/50 underline-offset-4 transition-colors duration-fast hover:decoration-cyan hover:text-ink;
+  }
+}
+
+@layer utilities {
+  /* Reveal is gated by `html.js` (set inline in index.html) so content stays visible without JS. */
+  .js .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+      opacity var(--dur-reveal) var(--ease-out-expo),
+      transform var(--dur-reveal) var(--ease-out-expo);
+    transition-delay: calc(var(--i, 0) * var(--stagger));
+  }
+
+  .js .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .js .reveal {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
