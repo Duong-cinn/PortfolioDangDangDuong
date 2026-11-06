@@ -6,7 +6,7 @@ A clean, open-source portfolio template for developers. Built with **React + Vit
 
 ## Screenshot
 
-![Template screenshot](./public/preview.jpg)
+![Digital Orbit social card](./public/og.png)
 
 ## ✨ Features
 

@@ -636,15 +636,18 @@ export function createOrbitScene(opts: OrbitOptions): OrbitController {
     if (satellites) {
       const n = satellites.count;
       for (let k = 0; k < n; k++) {
-        const a = t * 0.12 + (k / n) * Math.PI * 2;
-        dummy.position.set(Math.cos(a) * 2.42, Math.sin(a) * 2.42, 0);
+        // launch: each satellite leaves the core surface and settles on its orbit (staggered)
+        const launch = easeOutExpo(clamp01((t - 1.2 - k * 0.25) / 1.4));
+        const radius = 0.62 + (2.42 - 0.62) * launch;
+        const a = t * 0.12 + (k / n) * Math.PI * 2 - (1 - launch) * 1.2;
+        dummy.position.set(Math.cos(a) * radius, Math.sin(a) * radius, 0);
         dummy.rotation.set(t * 0.6, t * 0.4, 0);
         dummy.scale.setScalar(1);
         dummy.updateMatrix();
         satellites.setMatrixAt(k, dummy.matrix);
       }
       satellites.instanceMatrix.needsUpdate = true;
-      (satellites.material as MeshBasicMaterial).opacity = 0.85 * clamp01((t - 1.2) / 0.6);
+      (satellites.material as MeshBasicMaterial).opacity = 0.85 * clamp01((t - 1.2) / 0.3);
     }
 
     // comet (0.9s → 2.3s)

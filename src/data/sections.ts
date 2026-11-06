@@ -1,18 +1,19 @@
-import { about, has, projects, skillGroups } from "./config";
+import { about, certificates, education, experience, has, projects, skillGroups } from "./config";
 
-export type SectionId = "about" | "skills" | "projects" | "contact";
+export type SectionId = "about" | "skills" | "trajectory" | "projects" | "certificates" | "contact";
 
 export type SectionMeta = { id: SectionId; label: string; visible: boolean };
 
 /**
  * Page order + visibility. A section whose data is empty is not rendered
  * and does not appear in the navigation.
- * (Trajectory = Experience + Education and Certificates arrive in Phase 3.)
  */
 export const sections: SectionMeta[] = [
   { id: "about", label: "About", visible: has(about.bio) || has(about.research) || has(about.hobbies) },
   { id: "skills", label: "Skills", visible: skillGroups.some((g) => has(g.items)) },
+  { id: "trajectory", label: "Journey", visible: has(experience) || has(education) },
   { id: "projects", label: "Work", visible: has(projects) },
+  { id: "certificates", label: "Proof", visible: has(certificates) },
   { id: "contact", label: "Contact", visible: true },
 ];
 

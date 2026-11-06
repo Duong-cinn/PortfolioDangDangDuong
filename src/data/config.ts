@@ -49,7 +49,14 @@ export type Project = {
   image?: string;
 };
 
-export type Certificate = { name: string; issuer: string; year: string; url?: string };
+export type Certificate = {
+  name: string;
+  issuer: string;
+  year: string;
+  url?: string;
+  /** "certificate" (default) or "achievement" (award, competition, scholarship…). */
+  kind?: "certificate" | "achievement";
+};
 
 export type Hobby = { label: string; Icon: IconComponent };
 
@@ -66,6 +73,8 @@ export const site = {
   name: "Đặng Đăng Dương",
   /** Used in the navbar mark. */
   shortName: "Dương",
+  /** Public URL once deployed — used for canonical / OG tags. TODO(content) */
+  url: "",
   role: "Frontend & AI Engineer",
   /** Shown under the role; also the label of the orbit core. */
   focus: "Information Computer Engineering student · VNU-IS", // TODO(content): confirm official English program name
@@ -119,7 +128,7 @@ export const education: Education[] = [
 
 export const projects: Project[] = []; // TODO(content): 3–5 featured projects
 
-export const certificates: Certificate[] = []; // TODO(content): e.g. English B2 certificate
+export const certificates: Certificate[] = []; // TODO(content): e.g. English B2 certificate, awards (kind: "achievement")
 
 export const socials: Social[] = [
   { name: "Email", href: `mailto:${site.email}`, Icon: Mail },

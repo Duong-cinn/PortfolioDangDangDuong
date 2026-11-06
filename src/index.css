@@ -153,11 +153,54 @@
     transform: none;
   }
 
+  /* Timeline rail: the list itself stays put, its rail draws from the top. */
+  .reveal-line::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 1px;
+    background: rgb(var(--line));
+    transform-origin: top;
+  }
+
+  .js .reveal.reveal-line {
+    opacity: 1;
+    transform: none;
+  }
+
+  .js .reveal-line::before {
+    transform: scaleY(0);
+    transition: transform 1100ms var(--ease-out-expo) 120ms;
+  }
+
+  .js .reveal-line.is-visible::before {
+    transform: scaleY(1);
+  }
+
+  /* Hero intro: plays on load (no observer needed), never on the h1 (LCP). */
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-in {
+      animation: hero-in 700ms var(--ease-out-expo) both;
+      animation-delay: calc(80ms + var(--i, 0) * var(--stagger));
+    }
+  }
+
+  @keyframes hero-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .js .reveal {
       opacity: 1;
       transform: none;
       transition: none;
+    }
+
+    .js .reveal-line::before {
+      transform: none;
     }
 
     *,
