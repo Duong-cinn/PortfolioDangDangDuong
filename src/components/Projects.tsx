@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import { ArrowUpRight, Github } from "lucide-react";
 import { filled, has, projects, type Project } from "@/data/config";
 import { sectionIndex } from "@/data/sections";
+import { hasFeaturedProject } from "@/lib/layout";
 import { cn } from "@/lib/utils";
 import SectionHeading from "./SectionHeading";
 import { cardClass } from "./ui/Card";
@@ -10,8 +11,7 @@ import { Tag } from "./ui/Tag";
 /** Projects = the satellites of the hero orbit. Hidden when `projects` is empty. */
 export default function Projects() {
   if (!has(projects)) return null;
-  // Featured (2 columns) only when it fills the 3-column grid exactly: 2, 5, 8… projects.
-  const featured = (projects.length + 1) % 3 === 0;
+  const featured = hasFeaturedProject(projects.length);
 
   return (
     <section id="projects" aria-labelledby="projects-title" className="section-y container-x">

@@ -27,6 +27,8 @@ const preloads = assets
 
 const appHtml = ssr.render();
 html = html.replace("<!--app-->", appHtml).replace("<!--head-->", [...preloads, ssr.headTags()].join("\n    "));
+// Social crawlers need absolute image URLs.
+if (ssr.siteUrl) html = html.replaceAll('content="/og.png"', `content="${ssr.siteUrl}/og.png"`);
 writeFileSync(indexPath, html);
 
 if (ssr.siteUrl) {

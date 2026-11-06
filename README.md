@@ -1,154 +1,102 @@
-# Minimal Mono — Developer Portfolio Template
+# Digital Orbit — Đặng Đăng Dương
 
-A clean, open-source portfolio template for developers. Built with **React + Vite + Tailwind CSS**. Dark by default with a one-tap light mode, fully responsive, scroll-reveal animations, and a single config file to make it yours in minutes.
+Personal portfolio of **Đặng Đăng Dương**, Frontend & AI engineer (Information Computer Engineering, VNU-IS · Ninh Bình, Việt Nam).
 
-> **Demo:** [Demo Url](https://modern-portofolio-template-omega.vercel.app/)
-
-## Screenshot
+The hero is an interactive 3D object generated from real content: **the core is the main specialty, each ring is a skill group, each node is a skill, each satellite is a project**. The section break is a Tràng An karst skyline over water.
 
 ![Digital Orbit social card](./public/og.png)
 
-## ✨ Features
+## Highlights
 
-- ⚡ React 18 + Vite 5 — instant HMR, blazing build
-- 🎨 Tailwind CSS with a semantic design-token system (HSL)
-- 🌗 Dark / light mode (defaults to dark, remembers preference)
-- 📱 Fully responsive, mobile-first
-- ✨ Smooth scroll-reveal animations (IntersectionObserver, no deps)
-- 🧩 Sections: Hero · Projects · Skills · About · Contact · Footer
-- 📨 Contact form wired to **Formspree** (mailto fallback)
-- 🗂 All content in **one config file** — `src/data/config.ts`
-- 🪶 Lightweight, accessible, SEO-friendly meta tags
+- **Data-driven 3D hero**: vanilla three.js in a lazy chunk, loaded after `load` + idle, only while the hero is on screen. Rings draw in, nodes appear, satellites launch from the core. A comet makes one pass for the work experience.
+- **Interaction**: damped mouse follow, hover a ring to isolate it, click to jump to that skill group. The DOM chips under the object stay in sync with the rings.
+- **Fallbacks**: a static, data-driven SVG of the same orbit is used for reduced motion, no WebGL, Save-Data, low-power devices, and automatically when the frame rate stays too low.
+- **Prerendered HTML**: all content is readable with JavaScript disabled, and the `h1` is the LCP element painted straight from HTML.
+- **Hide-when-empty**: any section without data disappears from the page *and* the navigation.
+- **Motion budget**: native scrolling only. CSS reveals, a composited water drift, CSS scroll-driven parallax where supported, and everything off under `prefers-reduced-motion`.
 
-## 🛠 Tech Stack
+| Lighthouse (mobile, median of 3) | Score |
+|---|---|
+| Performance | 98 |
+| Accessibility | 100 |
+| Best Practices | 100 |
+| SEO | 100 |
 
-- [React 18](https://react.dev) · [TypeScript](https://www.typescriptlang.org/) · [Vite 5](https://vitejs.dev)
-- [Tailwind CSS](https://tailwindcss.com) · [shadcn/ui primitives](https://ui.shadcn.com)
-- [lucide-react](https://lucide.dev) + [react-icons](https://react-icons.github.io/react-icons/) for icons
-- [Formspree](https://formspree.io) for the contact form
+LCP ≈ 2.0 s · CLS 0 · TBT < 120 ms. Initial JS ≈ 69 kB gzip, lazy 3D chunk ≈ 126 kB gzip.
 
-## 🚀 Getting Started
+## Stack
+
+React 18 · TypeScript (strict) · Vite 5 · Tailwind CSS 3 · three.js · Vitest. Self-hosted fonts: Space Grotesk, Inter, JetBrains Mono (latin + vietnamese subsets only).
+
+## Getting started
 
 ```bash
-# 1. Clone
-git clone https://github.com/Nekoomaruu/modern-portofolio-template.git
-cd modern-portfolio-template
-
-# 2. Install
 npm install
-
-# 3. Run locally
-npm run dev
-
-# 4. Production build
-npm run build
-npm run preview
+npm run dev        # http://localhost:8080
+npm run qa         # typecheck + lint + tests + production build
+npm run preview    # serve the production build
 ```
 
-Open <http://localhost:8080>.
+## Editing content
 
-## ✏️ Customizing your content
+Everything lives in **[`src/data/config.ts`](src/data/config.ts)**: site info, bio, skill groups, experience, education, projects, certificates and socials.
 
-Almost everything lives in **`src/data/config.ts`**. Edit that one file:
+- **Markers.** `// SAMPLE` marks placeholder text written for layout; it is **not real**. `// TODO(content)` marks missing data. `npm run build` prints a warning while any marker remains, so placeholder content is never published by accident.
+- **Empty means hidden.** An empty string or empty list hides the matching UI. For example `projects: []` removes the Work section and its nav item. `cvUrl: ""` hides the CV buttons.
+- **The orbit follows the data.** `skillGroups` order = ring order, innermost first. `tone` picks the ring color (`cyan`, `violet`, `gray`, `dotted`). Each item becomes a node. Each project becomes a satellite (max 5).
+- **Brand icons (optional).** Add `Icon: SiReact` (from `react-icons/si`) to a skill. Each logo costs about 0.9 kB gzip.
+- **CV.** Put the PDF in `public/` and set `site.cvUrl`, e.g. `"/cv-dang-dang-duong.pdf"`.
+- **Domain.** Set `site.url` (e.g. `"https://dangduong.dev"`) to emit the canonical URL, `og:url`, `sitemap.xml` and the `robots.txt` Sitemap line at build time.
 
-```ts
-export const site = {
-  name: "Jane Doe",
-  role: "Frontend Developer",
-  bio: "Short tagline about you…",
-  email: "jane@example.com",
-  location: "Tokyo, JP",
-  cvUrl: "/cv.pdf",
-  formspreeEndpoint: "https://formspree.io/f/abcdwxyz", // your Formspree form ID
-};
+After changing the name, role, skill groups or projects, regenerate the social card and touch icon:
 
-export const projects = [
-  {
-    title: "Awesome App",
-    description: "What it does and why it's cool.",
-    tags: ["React", "Node", "Postgres"],
-    image: "/projects/awesome.png",
-    demo: "https://awesome.example.com",
-    github: "https://github.com/jane/awesome",
-  },
-  // …add more
-];
-
-export const skills = [
-  { name: "React", Icon: SiReact },
-  // …pick more from react-icons/si
-];
-
-export const socials = [
-  { name: "GitHub", href: "https://github.com/jane", Icon: FiGithub },
-  // …
-];
+```bash
+npm run og         # → public/og.png (1200×630) + public/apple-touch-icon.png  (needs local Chrome/Edge)
 ```
 
-Other things you can replace:
+## Scripts
 
-- **CV** — drop your file at `public/cv.pdf` (overwrites the placeholder).
-- **Project images** — put them in `public/projects/` and reference like `/projects/foo.png`.
-- **Favicon / OG image** — `public/favicon.ico`, update `<meta property="og:image">` in `index.html`.
-- **Theme colors** — tweak HSL tokens in `src/index.css` (`:root` and `.dark`).
-- **Fonts** — change the `<link>` in `index.html` and the `fontFamily` keys in `tailwind.config.ts`.
+| Script | What it does |
+|---|---|
+| `dev` | Vite dev server |
+| `build` | Client build → SSR build of `src/entry-server.tsx` → `scripts/prerender.mjs` (injects HTML, JSON-LD, font preloads, sitemap) |
+| `preview` | Serve `dist/` |
+| `typecheck` | `tsc` for app + node configs |
+| `lint` | ESLint |
+| `test` | Vitest (content rules, prerender/SEO, navbar a11y) |
+| `qa` | All of the above in order |
+| `og` | Render the social card + touch icon from `og.html` |
 
-## 📨 Setting up Formspree
+QA URL flags: `?static` forces the SVG fallback; `?hq` disables automatic quality downgrades (for testing only).
 
-1. Create a free account at <https://formspree.io>.
-2. Create a new form — copy the endpoint (looks like `https://formspree.io/f/xyzabcd`).
-3. Paste it into `site.formspreeEndpoint` in `src/data/config.ts`.
+## Deploy
 
-If you leave the placeholder endpoint, the form falls back to opening the user's mail client via `mailto:`.
+Any static host works. The output is `dist/`.
 
-## ☁️ Deploy
+- **Vercel**: framework preset *Vite*, build `npm run build`, output `dist`.
+- **Netlify**: build `npm run build`, publish `dist`.
 
-### Vercel
+`public/404.html` is served for unknown paths by both.
 
-1. Push the repo to GitHub.
-2. Go to <https://vercel.com/new>, import the repo.
-3. Framework preset: **Vite**. Build command: `npm run build`. Output: `dist`.
-4. Click **Deploy**. Done — every push to `main` redeploys.
-
-### Netlify
-
-1. Push the repo to GitHub.
-2. Go to <https://app.netlify.com/start>, pick the repo.
-3. Build command: `npm run build`. Publish directory: `dist`.
-4. Click **Deploy site**.
-
-For SPA routing (if you add routes), add `public/_redirects`:
-
-```
-/*   /index.html   200
-```
-
-## 📁 Project Structure
+## Project structure
 
 ```
 src/
-├─ components/      # Hero, Projects, Skills, About, Contact, Footer, Navbar
-├─ pages/           # Index, NotFound
-├─ hooks/           # useTheme, useReveal
-├─ data/
-│  └─ config.ts     # 👈 EDIT ME — your personal data
-├─ lib/             # utilities
-├─ index.css        # design tokens (HSL)
-└─ main.tsx
-public/
-├─ cv.pdf           # replace with your CV
-├─ favicon.ico
-└─ placeholder.svg
+├─ data/config.ts        # all personal content (edit me)
+├─ data/sections.ts      # section order + hide-when-empty rules
+├─ components/           # Navbar, Hero, About, Skills, Trajectory, Projects, Certificates, Contact, Footer, KarstDivider
+├─ components/hero/      # OrbitFallback (static SVG orbit)
+├─ three/orbitScene.ts   # the lazy three.js scene
+├─ hooks/                # useOrbitScene, useReveal, useActiveSection
+├─ og/                   # social card + touch icon (dev-only page)
+├─ entry-server.tsx      # prerender entry
+└─ index.css             # design tokens (CSS variables) + motion
+scripts/                 # prerender.mjs, generate-og.mjs
+docs/                    # PHASE0_REPORT.md (design audit), QA_CHECKLIST.md
 ```
 
-## 📄 License
+## Credits & license
 
-[MIT](./LICENSE) — free for personal and commercial use. Attribution appreciated but not required.
+Started from the MIT-licensed [Minimal Mono portfolio template](https://github.com/Nekoomaruu/modern-portofolio-template) by Nekomaru, then redesigned and rebuilt as Digital Orbit. Fonts are under the SIL Open Font License; optional brand logos come from Simple Icons via `react-icons`.
 
-## 🙏 Credits
-
-- Design system inspired by minimal-mono portfolio aesthetics
-- Icons by [Lucide](https://lucide.dev) & [Simple Icons](https://simpleicons.org) (via react-icons)
-- Fonts: [Space Grotesk](https://fonts.google.com/specimen/Space+Grotesk) + [Inter](https://fonts.google.com/specimen/Inter)
-
-If you ship a site with this template, a link back to the repo is a lovely gesture 💜
+[MIT](./LICENSE)

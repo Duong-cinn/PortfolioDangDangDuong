@@ -35,7 +35,7 @@
     --metal-2: 94 104 120;   /* #5E6878 */
 
     /* fluid type */
-    --fs-display: clamp(2.5rem, 1.6rem + 4.2vw, 5.5rem);
+    --fs-display: clamp(2.5rem, 1.6rem + 4.2vw, 4.75rem);
     --fs-h2: clamp(1.875rem, 1.4rem + 2vw, 3rem);
     --fs-h3: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
     --fs-body: clamp(1rem, 0.96rem + 0.2vw, 1.125rem);

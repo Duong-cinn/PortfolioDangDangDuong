@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -39,6 +40,12 @@ export default defineConfig({
   build: {
     // The lazy three.js chunk (orbitScene) is ~500 kB raw / ~130 kB gzip by design; everything else stays small.
     chunkSizeWarningLimit: 560,
+  },
+  test: {
+    environment: "jsdom",
+    globals: true,
+    setupFiles: ["./src/test/setup.ts"],
+    include: ["src/**/*.test.{ts,tsx}"],
   },
   resolve: {
     alias: {
