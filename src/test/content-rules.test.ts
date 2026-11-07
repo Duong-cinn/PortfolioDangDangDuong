@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import * as config from "@/data/config";
 import { filled, has } from "@/data/config";
 import { buildSections } from "@/data/sections";
-import { hasFeaturedProject } from "@/lib/layout";
+import { projectColumns, staircase } from "@/lib/layout";
 
 const empty = {
   about: { bio: [], research: [], hobbies: [] },
@@ -44,21 +44,31 @@ describe("hide-when-empty sections", () => {
     expect(visibleIds(withSkill)).toContain("skills");
   });
 
-  it("shows Trajectory for experience or education alone", () => {
+  it("shows Journey for experience, education or certificates alone", () => {
     const edu = { ...empty, education: [{ school: "S", program: "P", period: "2023" }] };
     expect(visibleIds(edu)).toContain("trajectory");
     const exp = { ...empty, experience: [{ role: "R", org: "O", period: "1m", bullets: [] }] };
     expect(visibleIds(exp)).toContain("trajectory");
+    const cert = { ...empty, certificates: [{ name: "C", issuer: "I", year: "2024" }] };
+    expect(visibleIds(cert)).toContain("trajectory");
   });
 
   it("keeps a stable section order", () => {
-    expect(buildSections(config).map((s) => s.id)).toEqual(["about", "skills", "trajectory", "projects", "certificates", "contact"]);
+    expect(buildSections(config).map((s) => s.id)).toEqual(["about", "skills", "projects", "trajectory", "contact"]);
   });
 });
 
-describe("projects grid", () => {
-  it("features the first card only when it fills the 3-column grid", () => {
-    expect([1, 2, 3, 4, 5, 6, 8].map(hasFeaturedProject)).toEqual([false, true, false, false, true, false, true]);
+describe("layout helpers", () => {
+  it("picks project columns that never leave a single orphan card", () => {
+    expect([1, 2, 3, 4, 5, 6, 8].map(projectColumns)).toEqual([1, 2, 3, 2, 3, 3, 2]);
+  });
+
+  it("builds an ascending staircase: first card lowest-left, last card top-right", () => {
+    const { cards, height } = staircase(4);
+    expect(cards[0]).toEqual({ left: 0, top: 450 });
+    expect(cards[3]).toEqual({ left: 1012, top: 0 });
+    expect(height).toBe(850);
+    expect(staircase(1).cards).toEqual([{ left: 0, top: 0 }]);
   });
 });
 

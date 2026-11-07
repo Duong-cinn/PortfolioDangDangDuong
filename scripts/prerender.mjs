@@ -22,7 +22,7 @@ if (!html.includes("<!--app-->") || !html.includes("<!--head-->")) {
 // Preload the display font (the h1 / LCP element) — latin + vietnamese subsets only.
 const assets = readdirSync(join(dist, "assets"));
 const preloads = assets
-  .filter((f) => /^space-grotesk-(latin|vietnamese)-wght-normal-.*\.woff2$/.test(f))
+  .filter((f) => /^inter-tight-(latin|vietnamese)-wght-normal-.*\.woff2$/.test(f))
   .map((f) => `<link rel="preload" href="/assets/${f}" as="font" type="font/woff2" crossorigin />`);
 
 const appHtml = ssr.render();

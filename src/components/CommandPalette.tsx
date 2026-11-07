@@ -3,6 +3,7 @@ import { ArrowDownToLine, ArrowUp, AtSign, Copy, CornerDownLeft, Hash, Layers, S
 import { filled, has, site, skillGroups, socials, type IconComponent } from "@/data/config";
 import { visibleSections } from "@/data/sections";
 import { OPEN_PALETTE_EVENT } from "@/lib/palette";
+import { scrollToId } from "@/lib/smoothScroll";
 import { cn } from "@/lib/utils";
 
 
@@ -18,15 +19,13 @@ type Command = {
   run: () => void;
 };
 
-function goTo(id: string) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
-  history.replaceState(null, "", id === "top" ? location.pathname : `#${id}`);
-  // move focus for keyboard / screen-reader users without a second scroll
-  if (!el.hasAttribute("tabindex")) el.setAttribute("tabindex", "-1");
-  el.focus({ preventScroll: true });
+const goTo = scrollToId;
+
+/** Jump to the skills console and switch its filter to the group. */
+function openSkillGroup(groupId: string) {
+  scrollToId("console");
+  const btn = document.getElementById(`skill-${groupId}`);
+  if (btn && btn.getAttribute("aria-pressed") !== "true") btn.click();
 }
 
 /** Ctrl/⌘ + K quick actions: jump to a section or skill group, copy email, open CV/socials. */
@@ -59,7 +58,7 @@ export default function CommandPalette() {
           hint: `${g.items.length} skills`,
           keywords: g.items.map((i) => i.name).join(" "),
           Icon: Layers,
-          run: () => goTo(`skill-${g.id}`),
+          run: () => openSkillGroup(g.id),
         })),
       {
         id: "copy-email",

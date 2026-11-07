@@ -8,27 +8,17 @@ The hero is an interactive 3D object generated from real content: **the core is 
 
 ## Highlights
 
-- **Data-driven 3D hero**: vanilla three.js in a lazy chunk, loaded after `load` + idle, only while the hero is on screen. Rings draw in, nodes appear, satellites launch from the core. A comet makes one pass for the work experience.
-- **Interaction**: damped mouse follow, hover a ring to isolate it, click to jump to that skill group. The DOM chips under the object stay in sync with the rings.
-- **Fallbacks**: a static, data-driven SVG of the same orbit is used for reduced motion, no WebGL, Save-Data, low-power devices, and automatically when the frame rate stays too low.
-- **Prerendered HTML**: all content is readable with JavaScript disabled, and the `h1` is the LCP element painted straight from HTML.
-- **Hide-when-empty**: any section without data disappears from the page *and* the navigation.
-- **Personal details**: a live Ninh Bình clock next to the coordinates (status dot = waking hours), the Journey section drawn as a climbing route whose rope uncovers on scroll, and project cards with a subtle pointer tilt + glare (fine pointers only).
-- **Quick actions**: `Ctrl/⌘ + K` opens a command palette (native `<dialog>`): jump to any section or skill group (searchable by skill name), copy the email, open CV / socials.
-- **Motion budget**: native scrolling only. CSS reveals, a composited water drift, CSS scroll-driven parallax where supported, and everything off under `prefers-reduced-motion`.
+- **Scroll storytelling over one fixed WebGL scene** (vanilla three.js, lazy chunk): a procedural crystal **spaceship** flies between one pose per section (eased, banks with scroll velocity), over a perspective **data sea** of points — the pointer leaves ripples, a click sends a wave — and a star field that stretches into **warp streaks** while you scroll fast.
+- **Three backdrop chapters** crossfade with scroll: deep-space dawn with a HUD grid (hero) → violet (reading sections) → night over a Tràng An karst skyline (contact + footer). Pure CSS, so it is also the no-WebGL fallback.
+- **Sections**: hero with masked name entrance (Web Animations timeline) and a telemetry readout · About statement + stats + glass cards · Skills as an interactive **dev console** (filter by group, sparklines/bars draw in, projects that don't use the group dim; tilts upright in 3D as it scrolls in) · Work with a **self-typing `profile.ts`**, tilt + glare project cards and a "how I work" strip · Journey as an ascending **staircase of holds** joined by a rope that draws with scroll · Contact CTA + footer wordmark.
+- **Micro-interactions**: magnetic buttons (label leans further for depth), shine sweep, click ripple, pointer spotlight on glass, Lenis smooth scrolling, `Ctrl/⌘ + K` command palette, live Ninh Bình clock.
+- **Fallbacks**: reduced motion → no 3D, no Lenis, everything visible at once; slow devices step down DPR, then drop to the CSS backdrop; prerendered HTML is fully readable without JavaScript.
 
-| Lighthouse (mobile, median of 3) | Score |
-|---|---|
-| Performance | 98 |
-| Accessibility | 100 |
-| Best Practices | 100 |
-| SEO | 100 |
-
-LCP ≈ 2.0 s · CLS 0 · TBT < 120 ms. Initial JS ≈ 73 kB gzip, lazy 3D chunk ≈ 126 kB gzip.
+Initial JS ≈ 74 kB gzip (+ Lenis 6 kB, loaded after hydration); lazy 3D chunk ≈ 137 kB gzip, requested after load + idle. Lighthouse scores of the previous design no longer apply — re-measure on the deployed URL.
 
 ## Stack
 
-React 18 · TypeScript (strict) · Vite 5 · Tailwind CSS 3 · three.js · Vitest. Self-hosted fonts: Space Grotesk, Inter, JetBrains Mono (latin + vietnamese subsets only).
+React 18 · TypeScript (strict) · Vite 5 · Tailwind CSS 3 · three.js · Lenis · Vitest. Self-hosted fonts: Inter Tight (latin + vietnamese), Instrument Serif italic, JetBrains Mono.
 
 ## Getting started
 
@@ -89,7 +79,8 @@ src/
 ├─ components/           # Navbar, Hero, About, Skills, Trajectory, Projects, Certificates, Contact, Footer, KarstDivider,
 │                        # CommandPalette, LocalTime
 ├─ components/hero/      # OrbitFallback (static SVG orbit)
-├─ three/orbitScene.ts   # the lazy three.js scene
+├─ three/spaceScene.ts   # the lazy three.js scene (ship, data sea, warp stars)
+├─ three/poses.ts        # ship pose per section (desktop + phone)
 ├─ hooks/                # useOrbitScene, useReveal, useActiveSection, useTilt
 ├─ og/                   # social card + touch icon (dev-only page)
 ├─ entry-server.tsx      # prerender entry

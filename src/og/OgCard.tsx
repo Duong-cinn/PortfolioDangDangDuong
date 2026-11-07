@@ -1,53 +1,77 @@
+import { useEffect, useRef } from "react";
 import { site, skillGroups } from "@/data/config";
-import { toneClass } from "@/lib/tone";
-import { cn } from "@/lib/utils";
-import OrbitFallback from "@/components/hero/OrbitFallback";
-import { OrbitMark } from "@/components/OrbitMark";
+import type { Pose } from "@/three/spaceScene";
 
-/** 1200×630 social card, rendered from the same data + SVG orbit as the hero. */
+/** Ship pose for the social card (same scene as the hero, framed for 1200×630). */
+const OG_POSE: Pose = { x: 0.44, y: 0.04, s: 0.78, yaw: -0.62, pitch: 0.2, roll: -0.42 };
+
+/**
+ * 1200×630 social card: the real WebGL scene (ship, planets, data sea) as the backdrop,
+ * name + role + skill groups in HUD style on top. Rendered by `npm run og`.
+ */
 export default function OgCard() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    let dispose: (() => void) | undefined;
+    import("@/three/spaceScene").then(({ createSpaceScene }) => {
+      if (!canvasRef.current) return;
+      dispose = createSpaceScene({
+        canvas: canvasRef.current,
+        measure: () => ({ stops: [{ at: 0, pose: OG_POSE }], endTop: Infinity }),
+        onReady: () => document.documentElement.setAttribute("data-og-ready", "1"),
+        onFail: () => undefined,
+      })?.dispose;
+    });
+    return () => dispose?.();
+  }, []);
+
   return (
-    <div id="og" className="relative flex h-[630px] w-[1200px] items-center overflow-hidden bg-bg px-20">
-      <div className="relative z-10 w-[640px]">
-        <p className="label-mono flex items-center gap-3 text-sm">
+    <>
+    <div id="og" className="og">
+      <div className="scene-layer scene-hero">
+        <div className="scene-grid" />
+      </div>
+      <canvas ref={canvasRef} className="og__canvas" />
+
+      <div className="og__text">
+        <p className="og__meta">
           <span className="text-cyan">{site.coords}</span>
-          <span className="h-px w-8 bg-line" />
+          <span className="og__rule" />
           {site.location}
         </p>
-        <h1 className="mt-6 font-display text-[84px] font-semibold leading-[1.02] tracking-[-0.035em] text-ink">{site.name}</h1>
-        <p className="mt-5 font-display text-[34px] font-medium text-ink-2">
+        <h1 className="og__name">{site.name}</h1>
+        <p className="og__role">
           {site.role}
           <span className="text-cyan">.</span>
         </p>
-        <ul className="mt-10 flex flex-wrap gap-2.5">
+        <ul className="og__chips">
           {skillGroups.map((g) => (
-            <li key={g.id} className="inline-flex items-center gap-2 rounded-full border border-line px-3.5 py-1.5 font-mono text-[15px] text-ink-2">
-              <span className={cn("h-2 w-2 rounded-full", toneClass[g.tone].bg)} />
-              {g.label}
-            </li>
+            <li key={g.id}>{g.label}</li>
           ))}
         </ul>
       </div>
-      <div className="absolute right-[-40px] top-1/2 h-[600px] w-[600px] -translate-y-1/2">
-        <OrbitFallback />
-      </div>
-      <div className="absolute bottom-10 left-20 flex items-center gap-2.5 font-display text-lg font-semibold text-ink">
-        <OrbitMark className="h-6 w-6 text-cyan" />
+
+      <div className="og__brand">
+        <span className="orb" />
         <span>
           {site.shortName}
           <span className="text-cyan">.</span>
         </span>
-        {site.url && <span className="ml-3 font-mono text-sm font-normal text-ink-3">{site.url.replace(/^https?:\/\//, "")}</span>}
+        {site.url && <span className="og__url">{site.url.replace(/^https?:\/\//, "")}</span>}
       </div>
     </div>
+    {/* page length so the planets sit at their hero positions (they are placed by scroll progress) */}
+    <div aria-hidden style={{ height: 5000 }} />
+    </>
   );
 }
 
-/** 180×180 apple-touch-icon: the brand mark on the page background. */
+/** 180×180 apple-touch-icon: the orb mark on the page background. */
 export function AppIcon() {
   return (
-    <div className="flex h-[180px] w-[180px] items-center justify-center bg-bg">
-      <OrbitMark className="h-[120px] w-[120px] text-cyan" />
+    <div className="og-icon">
+      <span className="orb" />
     </div>
   );
 }

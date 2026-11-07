@@ -19,12 +19,15 @@ export default {
         },
         cyan: token("cyan"),
         violet: token("violet"),
+        pink: token("pink"),
+        mint: token("mint"),
         danger: token("danger"),
-        success: token("success"),
+        success: token("mint"),
       },
       fontFamily: {
-        sans: ["'Inter Variable'", "Inter", "ui-sans-serif", "system-ui", "sans-serif"],
-        display: ["'Space Grotesk Variable'", "'Inter Variable'", "ui-sans-serif", "system-ui", "sans-serif"],
+        sans: ["'Inter Tight Variable'", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["'Inter Tight Variable'", "ui-sans-serif", "system-ui", "sans-serif"],
+        serif: ["'Instrument Serif'", "Georgia", "serif"],
         mono: ["'JetBrains Mono'", "ui-monospace", "SFMono-Regular", "Consolas", "monospace"],
       },
       fontSize: {

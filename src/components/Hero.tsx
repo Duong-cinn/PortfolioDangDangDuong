@@ -1,160 +1,193 @@
-import { useRef, type CSSProperties } from "react";
-import { ArrowDownToLine, ArrowUpRight } from "lucide-react";
-import { filled, has, site, skillGroups } from "@/data/config";
-import { useOrbitScene } from "@/hooks/useOrbitScene";
-import { toneClass } from "@/lib/tone";
-import { cn } from "@/lib/utils";
-import { ButtonLink } from "./ui/Button";
-import OrbitFallback from "./hero/OrbitFallback";
+import { useEffect, useState } from "react";
+import { ArrowDownToLine } from "lucide-react";
+import { filled, projects, site, skillGroups } from "@/data/config";
+import { scrollToId } from "@/lib/smoothScroll";
 import LocalTime from "./LocalTime";
+import { BtnLink, Chip } from "./ui/Btn";
 
-const stagger = (i: number) => ({ "--i": i }) as CSSProperties;
+const EASE = "cubic-bezier(.2,.75,.2,1)";
+
+/** One Web Animations timeline, run once on load (see index.css `[data-in]` guard). */
+const ENTRANCE: [selector: string, from: Keyframe, delay: number, duration: number][] = [
+  ['[data-in="nav"]', { opacity: 0, transform: "translateY(-14px)" }, 0, 900],
+  ['[data-in="meta"]', { opacity: 0, transform: "translateY(10px)" }, 150, 900],
+  ['[data-in="line1"]', { opacity: 0, transform: "translateY(105%)" }, 250, 1100],
+  ['[data-in="line2"]', { opacity: 0, transform: "translateY(105%)" }, 370, 1100],
+  ['[data-in="sub"]', { opacity: 0, transform: "translateY(12px)" }, 620, 900],
+  ['[data-in="cta"]', { opacity: 0, transform: "translateY(14px)" }, 740, 900],
+  ['[data-in="card"]', { opacity: 0, transform: "translateY(40px) scale(.96)" }, 880, 1100],
+  ['[data-in="hud"]', { opacity: 0, transform: "translateX(16px)" }, 980, 1000],
+];
 
 export default function Hero() {
-  const hostRef = useRef<HTMLElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const slotRef = useRef<HTMLDivElement>(null);
-  const fadeRef = useRef<HTMLDivElement>(null);
-  const { status, active, setActive } = useOrbitScene({ host: hostRef, canvas: canvasRef, slot: slotRef, fade: fadeRef });
-  const live = status === "ready";
+  useEffect(() => {
+    const html = document.documentElement;
+    const done = () => (html.dataset.entered = "1");
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || typeof Element.prototype.animate !== "function") {
+      done();
+      return;
+    }
+    for (const [sel, from, delay, duration] of ENTRANCE) {
+      document.querySelectorAll<HTMLElement>(sel).forEach((el) =>
+        el.animate([from, { opacity: 1, transform: "none" }], { duration, delay, easing: EASE, fill: "backwards" }),
+      );
+    }
+    const raf = requestAnimationFrame(done);
+    const failsafe = window.setTimeout(done, 3000);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearTimeout(failsafe);
+    };
+  }, []);
+
+  const skillCount = skillGroups.reduce((n, g) => n + g.items.length, 0);
+  const [first, ...rest] = site.name.split(" ");
+  // "Đặng Đăng" / "Dương": last word on its own line
+  const line1 = [first, ...rest.slice(0, -1)].join(" ");
+  const line2 = rest.at(-1) ?? "";
 
   return (
-    <section ref={hostRef} id="top" aria-labelledby="hero-title" className="relative overflow-hidden">
-      {/* Full-bleed WebGL layer (object + ambient particles). Decorative: the chips below carry the same info. */}
-      <div
-        aria-hidden
-        className={cn(
-          "pointer-events-none absolute inset-0 transition-opacity duration-slow ease-out",
-          live ? "opacity-100" : "opacity-0",
+    <section id="top" aria-labelledby="hero-title" className="hero">
+      <p className="hero-meta" data-in="meta">
+        <span className="text-cyan">{site.coords}</span>
+        <span aria-hidden className="hero-meta__rule" />
+        <span>
+          {site.location} · {site.timezone}
+        </span>
+        {filled(site.timeZone) && (
+          <>
+            <span aria-hidden className="hero-meta__rule js-only" />
+            <LocalTime timeZone={site.timeZone} />
+          </>
         )}
-      >
-        <div ref={fadeRef} className="h-full w-full">
-          {status !== "static" && <canvas ref={canvasRef} className="block h-full w-full" />}
-        </div>
+      </p>
+
+      <h1 id="hero-title" className="hero-title">
+        <span className="hero-title__mask">
+          <span data-in="line1">{line1}</span>
+        </span>
+        {line2 && (
+          <span className="hero-title__mask">
+            <span data-in="line2">
+              {line2}
+              <span className="text-cyan">.</span>
+            </span>
+          </span>
+        )}
+      </h1>
+
+      <div className="hero-sub" data-in="sub">
+        <p className="hero-sub__role">
+          {site.role}
+          <span className="hero-sub__focus"> — {site.focus}</span>
+        </p>
+        {filled(site.availability) && (
+          <Chip live className="hero-sub__chip">
+            {site.availability}
+          </Chip>
+        )}
       </div>
 
-      <div className="container-x relative z-10 grid min-h-[min(calc(100svh-var(--header-h)),880px)] items-center gap-12 pb-20 pt-12 md:grid-cols-8 md:pt-16 lg:grid-cols-12 lg:gap-8">
-        {/* Text — always the dominant layer */}
-        <div className="md:col-span-5 lg:col-span-7">
-          <p className="hero-in label-mono flex flex-wrap items-center gap-x-3 gap-y-1" style={stagger(0)}>
-            <span className="group relative cursor-default text-cyan">
-              {site.coords}
-              <span
-                role="tooltip"
-                className="pointer-events-none absolute left-0 top-full mt-2 whitespace-nowrap rounded-md border border-line bg-elevated px-2.5 py-1 normal-case tracking-normal text-ink-2 opacity-0 transition-opacity duration-fast group-hover:opacity-100"
-              >
-                Tràng An karst · Ninh Bình
-              </span>
-            </span>
-            <span aria-hidden className="hidden h-px w-6 bg-line sm:block" />
-            <span>
-              {site.location} · {site.timezone}
-            </span>
-            {filled(site.timeZone) && (
-              <>
-                <span aria-hidden className="js-only hidden h-px w-6 bg-line sm:block" />
-                <LocalTime timeZone={site.timeZone} />
-              </>
-            )}
-          </p>
-
-          {/* h1 is intentionally NOT a .reveal — it is the LCP element and must paint immediately. */}
-          <h1 id="hero-title" className="mt-6 text-display">
-            {site.name}
-          </h1>
-
-          <p className="hero-in mt-5 font-display text-h3 font-medium text-ink-2" style={stagger(1)}>
-            {site.role}
-            <span className="text-cyan">.</span>
-          </p>
-
-          {filled(site.focus) && (
-            <p className="hero-in mt-2 text-sm text-ink-3" style={stagger(2)}>
-              {site.focus}
-            </p>
-          )}
-
-          {filled(site.tagline) && (
-            <p className="hero-in mt-6 max-w-prose text-ink-2" style={stagger(3)}>
-              {site.tagline}
-            </p>
-          )}
-
-          {filled(site.availability) && (
-            <p
-              className="hero-in mt-8 inline-flex items-center gap-2.5 rounded-full border border-line bg-surface/70 px-3.5 py-1.5 text-sm text-ink-2"
-              style={stagger(3)}
-            >
-              <span aria-hidden className="relative flex h-2 w-2">
-                <span className="absolute inset-0 animate-ping rounded-full bg-success/60" />
-                <span className="relative h-2 w-2 rounded-full bg-success" />
-              </span>
-              {site.availability}
-            </p>
-          )}
-
-          <div className="hero-in mt-8 flex flex-wrap gap-3" style={stagger(4)}>
-            <ButtonLink href="#contact">
-              Get in touch
-              <ArrowUpRight className="h-4 w-4" aria-hidden />
-            </ButtonLink>
-            {filled(site.cvUrl) && (
-              <ButtonLink href={site.cvUrl} variant="secondary" download>
-                <ArrowDownToLine className="h-4 w-4" aria-hidden />
-                Download CV
-              </ButtonLink>
-            )}
-          </div>
-        </div>
-
-        {/* Object slot — the 3D object is fitted to this box, the SVG fills it until then. */}
-        <div className="md:col-span-3 lg:col-span-5">
-          <div ref={slotRef} className="relative mx-auto aspect-square w-[min(78vw,320px)] md:w-full md:max-w-[420px] lg:max-w-[540px]">
-            <OrbitFallback
-              active={active}
-              className={cn("transition-opacity duration-slow ease-out", live ? "opacity-0" : "opacity-100")}
-            />
-          </div>
-
-          <ul aria-label="Skill orbits" className="mt-6 flex flex-wrap justify-center gap-2">
-            {skillGroups.map((g) => {
-              const isActive = active === g.id;
-              const interactive = has(g.items);
-              const chipClass = cn(
-                "inline-flex h-8 items-center gap-2 rounded-full border px-3 font-mono text-xs transition-colors duration-fast",
-                isActive ? cn("bg-elevated text-ink", toneClass[g.tone].border) : "border-line bg-surface/60 text-ink-2",
-                interactive && "hover:text-ink",
-              );
-              const handlers = {
-                onMouseEnter: () => setActive(g.id),
-                onMouseLeave: () => setActive(null),
-                onFocus: () => setActive(g.id),
-                onBlur: () => setActive(null),
-              };
-              const content = (
-                <>
-                  <span aria-hidden className={cn("h-1.5 w-1.5 rounded-full", toneClass[g.tone].bg)} />
-                  {g.label}
-                  {interactive && <span className="text-ink-3">{String(g.items.length).padStart(2, "0")}</span>}
-                </>
-              );
-              return (
-                <li key={g.id}>
-                  {interactive ? (
-                    <a href={`#skill-${g.id}`} className={chipClass} {...handlers}>
-                      {content}
-                    </a>
-                  ) : (
-                    <span className={chipClass} onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave}>
-                      {content}
-                    </span>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+      <div className="hero-cta" data-in="cta">
+        <BtnLink href="#contact">Get in touch</BtnLink>
+        <BtnLink href="#projects" variant="ghost">
+          See my work
+        </BtnLink>
+        {filled(site.cvUrl) && (
+          <BtnLink href={site.cvUrl} variant="ghost" download>
+            <ArrowDownToLine className="h-4 w-4" aria-hidden /> CV
+          </BtnLink>
+        )}
       </div>
+
+      <dl className="hero-hud" data-in="hud" aria-label="At a glance">
+        <div>
+          <dt>skills</dt>
+          <dd>{String(skillCount).padStart(2, "0")}</dd>
+        </div>
+        <div>
+          <dt>orbits</dt>
+          <dd>{String(skillGroups.length).padStart(2, "0")}</dd>
+        </div>
+        <div>
+          <dt>projects</dt>
+          <dd>{String(projects.length).padStart(2, "0")}</dd>
+        </div>
+        <div>
+          <dt>status</dt>
+          <dd className="text-mint">learning</dd>
+        </div>
+      </dl>
+
+      <LaunchPanel />
     </section>
+  );
+}
+
+const COUNT = ["03", "02", "01", "GO"] as const;
+const CHECKS = ["ENGINES", "NAV LOCK", "CREW"] as const;
+
+/**
+ * Hero → About trigger styled as a pre-launch console: hazard stripe, T-minus countdown,
+ * system checks ticking to OK, a charge bar and a glitching call to action.
+ * Click = warp jump to About. Decorative parts are aria-hidden; the button has a plain label.
+ */
+function LaunchPanel() {
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setStep(COUNT.length - 1);
+      return;
+    }
+    let i = 0;
+    let timer = 0;
+    const tick = () => {
+      i = (i + 1) % (COUNT.length + 1); // one extra beat holding "GO"
+      setStep(Math.min(i, COUNT.length - 1));
+      timer = window.setTimeout(tick, i === COUNT.length ? 1600 : 1000);
+    };
+    timer = window.setTimeout(tick, 1800); // after the hero entrance
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  const go = COUNT[step] === "GO";
+
+  return (
+    <button
+      type="button"
+      className={go ? "launch is-go" : "launch"}
+      data-in="card"
+      onClick={() => scrollToId("about")}
+      aria-label="Scroll down and discover"
+    >
+      <span aria-hidden className="launch__frame">
+        <span className="launch__stripe" />
+        <span className="launch__head">
+          <span className="launch__title">
+            <i className="launch__led" />◢ LAUNCH SEQ
+          </span>
+          <span>DO-01</span>
+        </span>
+        <span className="launch__count">
+          {go ? "" : "T-"}
+          <b key={step}>{COUNT[step]}</b>
+        </span>
+        <span className="launch__checks">
+          {CHECKS.map((c, i) => (
+            <span key={c} className={step >= i || go ? "is-ok" : undefined}>
+              {c}
+              <i>{step >= i || go ? "OK" : "··"}</i>
+            </span>
+          ))}
+        </span>
+        <span className="launch__bar">
+          <span style={{ width: `${((step + 1) / COUNT.length) * 100}%` }} />
+        </span>
+        <span className="launch__cta" data-text="SCROLL TO LAUNCH ↓">
+          SCROLL TO LAUNCH ↓
+        </span>
+      </span>
+    </button>
   );
 }

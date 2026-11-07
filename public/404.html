@@ -4,26 +4,68 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex" />
-    <meta name="theme-color" content="#0A0C10" />
-    <title>Lost in orbit — 404</title>
+    <meta name="theme-color" content="#070A22" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>Signal lost — 404</title>
     <style>
       :root { color-scheme: dark; }
-      body { margin: 0; min-height: 100svh; display: grid; place-items: center; padding: 16px;
-             background: #0A0C10; color: #EEF1F6; font: 16px/1.6 system-ui, sans-serif; text-align: center; }
-      p { color: #B6BECA; margin: 0 0 24px; }
-      code { color: #38D9F0; font: 12px ui-monospace, monospace; letter-spacing: .14em; }
-      h1 { font-size: clamp(2rem, 6vw, 3.5rem); margin: 12px 0; letter-spacing: -.03em; }
-      a { display: inline-flex; align-items: center; height: 44px; padding: 0 20px; border-radius: 10px;
-          background: #38D9F0; color: #0A0C10; font-weight: 600; text-decoration: none; }
-      a:focus-visible { outline: 2px solid #38D9F0; outline-offset: 3px; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; min-height: 100svh; display: grid; place-items: center; padding: 16px;
+        color: #f4f2ff; font: 16px/1.6 "Inter Tight", system-ui, sans-serif; text-align: center;
+        background:
+          radial-gradient(1px 1px at 12% 22%, #fff 50%, transparent 51%),
+          radial-gradient(1px 1px at 78% 14%, #fff 50%, transparent 51%),
+          radial-gradient(1.5px 1.5px at 64% 70%, #cdd6ff 50%, transparent 51%),
+          radial-gradient(1px 1px at 30% 80%, #fff 50%, transparent 51%),
+          radial-gradient(1px 1px at 90% 60%, #fff 50%, transparent 51%),
+          radial-gradient(90% 55% at 50% 110%, rgba(95, 227, 255, 0.3), transparent 70%),
+          radial-gradient(40% 35% at 85% 15%, rgba(255, 143, 216, 0.16), transparent 70%),
+          linear-gradient(180deg, #050719 0%, #0b0d35 45%, #15124d 75%, #0d1a46 100%);
+      }
+      main {
+        --c: rgba(95, 227, 255, 0.85);
+        position: relative; width: min(520px, 100%); padding: 40px 32px 36px;
+        border: 1px solid rgba(160, 170, 255, 0.16);
+        background-color: rgba(18, 14, 66, 0.45);
+        backdrop-filter: blur(18px);
+        background-image:
+          linear-gradient(var(--c), var(--c)), linear-gradient(var(--c), var(--c)),
+          linear-gradient(var(--c), var(--c)), linear-gradient(var(--c), var(--c)),
+          linear-gradient(var(--c), var(--c)), linear-gradient(var(--c), var(--c)),
+          linear-gradient(var(--c), var(--c)), linear-gradient(var(--c), var(--c));
+        background-repeat: no-repeat;
+        background-size: 16px 1px, 1px 16px, 16px 1px, 1px 16px, 16px 1px, 1px 16px, 16px 1px, 1px 16px;
+        background-position: 0 0, 0 0, 100% 0, 100% 0, 0 100%, 0 100%, 100% 100%, 100% 100%;
+      }
+      .orb {
+        width: 72px; height: 72px; margin: 0 auto 22px; border-radius: 50%;
+        background: radial-gradient(circle at 32% 30%, #fff 0 8%, #b9f3ff 22%, #6f78ff 55%, #3b2fc2 80%);
+        box-shadow: 0 0 32px rgba(95, 227, 255, 0.5), inset -6px -8px 16px rgba(30, 16, 120, 0.55);
+        animation: drift 6s ease-in-out infinite;
+      }
+      @keyframes drift { 50% { transform: translate(8px, -6px) rotate(8deg); } }
+      code { display: block; color: #5fe3ff; font: 12px ui-monospace, "JetBrains Mono", monospace; letter-spacing: .16em; }
+      h1 { font-weight: 300; font-size: clamp(2.4rem, 7vw, 3.6rem); line-height: 1.05; margin: 14px 0 10px; letter-spacing: -.03em; }
+      em { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; }
+      p { color: #c8c5ec; margin: 0 0 28px; }
+      a {
+        display: inline-flex; align-items: center; height: 48px; padding: 0 22px; border-radius: 12px;
+        background: linear-gradient(120deg, #7c86ff, #6fd6ff); color: #070a22; font-weight: 600; text-decoration: none;
+        box-shadow: 0 10px 30px rgba(95, 150, 255, 0.4); transition: transform .3s, box-shadow .3s;
+      }
+      a:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(95, 200, 255, 0.55); }
+      a:focus-visible { outline: 2px solid #5fe3ff; outline-offset: 3px; }
+      @media (prefers-reduced-motion: reduce) { .orb { animation: none; } a { transition: none; } }
     </style>
   </head>
   <body>
     <main>
-      <code>ERROR 404</code>
-      <h1>Lost in orbit</h1>
-      <p>This page drifted out of range.</p>
-      <a href="/">Return to the core</a>
+      <div class="orb" aria-hidden="true"></div>
+      <code>ERROR 404 · SIGNAL LOST</code>
+      <h1>Lost in <em>orbit</em></h1>
+      <p>This page drifted out of range. Let&rsquo;s get you back to the launch pad.</p>
+      <a href="/">Return to base →</a>
     </main>
   </body>
 </html>

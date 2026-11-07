@@ -1,5 +1,5 @@
 /**
- * Renders og.html (the social card built from src/data/config.ts) to public/og.png,
+ * Renders og.html (the social card: real WebGL scene + text from src/data/config.ts) to public/og.png,
  * and og.html?icon to public/apple-touch-icon.png.
  * Usage: npm run og      (re-run whenever name / role / skill groups / projects change)
  * Needs a local Chrome/Edge/Chromium. Override with CHROME_PATH=/path/to/chrome.
@@ -41,11 +41,15 @@ try {
         chrome,
         [
           "--headless=new",
+          // software WebGL so the real 3D scene renders without a GPU
+          "--use-angle=swiftshader",
+          "--enable-unsafe-swiftshader",
+          "--ignore-gpu-blocklist",
           "--hide-scrollbars",
           "--force-device-scale-factor=1",
           `--user-data-dir=${profile}`,
           `--window-size=${size}`,
-          "--virtual-time-budget=6000",
+          "--virtual-time-budget=9000",
           `--screenshot=${file}`,
           target,
         ],
@@ -54,7 +58,7 @@ try {
       p.on("exit", (code) => (code === 0 ? done() : fail(new Error(`Chrome exited with ${code}`))));
       p.on("error", fail);
     });
-  await shoot(url, "1200,630", out);
+  await shoot(`${url}?keep3d`, "1200,630", out);
   await shoot(`${url}?icon`, "180,180", join(root, "public", "apple-touch-icon.png"));
   console.log(`✓ ${out}
 ✓ public/apple-touch-icon.png`);

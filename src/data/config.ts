@@ -78,7 +78,7 @@ export const site = {
   /** Used in the navbar mark. */
   shortName: "Dương",
   /** Public URL once deployed — used for canonical / OG tags. */
-  url: "", // TODO(content): set after the first Vercel deploy
+  url: "https://portfolio-dang-dang-duong.vercel.app",
   role: "Frontend & AI Engineer",
   /** Shown under the role; also the label of the orbit core. */
   focus: "Information Computer Engineering student · VNU-IS",
@@ -225,6 +225,44 @@ export const projects: Project[] = [
 export const certificates: Certificate[] = [
   { name: "English — CEFR B2 (Aptis)", issuer: "British Council", year: "2024" },
   { name: "Student project showcase — finalist", issuer: "VNU International School", year: "2025", kind: "achievement" }, // SAMPLE
+];
+
+/**
+ * About → cockpit HUD stats. Each kind draws its own mini instrument:
+ *  progress → year track with a "now" marker · gauge → arc · scale → CEFR-style ladder · location → radar.
+ */
+export type Stat =
+  | { kind: "progress"; label: string; value: string; caption: string; from: number; to: number }
+  | { kind: "gauge"; label: string; value: number; max: number; caption: string }
+  | { kind: "scale"; label: string; value: string; steps: string[]; caption: string }
+  | { kind: "location"; label: string; value: string; caption: string };
+
+export const stats: Stat[] = [
+  { kind: "progress", label: "Education", value: "2027", caption: "Information Computer Engineering · VNU-IS", from: 2023, to: 2027 },
+  { kind: "gauge", label: "GPA", value: 3.0, max: 4, caption: "on a 4-point scale" },
+  { kind: "scale", label: "English", value: "B2", steps: ["A1", "A2", "B1", "B2", "C1", "C2"], caption: "Aptis · British Council 2024" },
+  { kind: "location", label: "Base", value: "Ninh Bình", caption: "Việt Nam · UTC+7" },
+];
+
+/** Big statement at the top of About. `*word*` → serif italic, `[words]` → accent gradient. */
+export const statement = "I build interfaces that *think* — [clean frontend craft] meeting practical AI."; // SAMPLE
+
+/** "How I work" strip under the projects (lead-in is bold). */
+// SAMPLE — working-style copy
+export const process: { lead: string; body: string }[] = [
+  { lead: "Understand the problem first.", body: "Talk to the people who feel it, then write the smallest spec that could work." },
+  { lead: "Prototype in the browser.", body: "Real data, real motion, early — design decisions are cheaper when you can click them." },
+  { lead: "Ship, measure, refine.", body: "Small reviewable changes, a performance budget, and a second pass on the details." },
+];
+
+/** Dev-console "Where my time goes" bars (percent, should sum to ~100). */
+// SAMPLE — rough split, adjust to taste
+export const focus: { label: string; value: number }[] = [
+  { label: "Frontend engineering", value: 40 },
+  { label: "Machine learning", value: 25 },
+  { label: "UI & motion design", value: 18 },
+  { label: "Backend & APIs", value: 12 },
+  { label: "Writing & docs", value: 5 },
 ];
 
 export const socials: Social[] = [

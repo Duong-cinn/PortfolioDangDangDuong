@@ -1,52 +1,73 @@
 import type { CSSProperties } from "react";
-import { about, has, site } from "@/data/config";
+import { about, has, site, socials, statement, stats } from "@/data/config";
 import { sectionIndex } from "@/data/sections";
-import { cn } from "@/lib/utils";
-import SectionHeading from "./SectionHeading";
-import { Tag } from "./ui/Tag";
+import { richText } from "@/lib/richText";
+import HudStats from "./HudStats";
+import { BtnLink, Chip, Eyebrow } from "./ui/Btn";
 
+/** Statement → stats → bio + facts. The ship glides past on the left. */
 export default function About() {
-  const hasBio = has(about.bio);
+  const github = socials.find((s) => s.name === "GitHub");
 
   return (
-    <section id="about" aria-labelledby="about-title" className="section-y container-x">
-      <SectionHeading id="about-title" index={sectionIndex("about")} eyebrow="Who I am" title="About" />
+    <section id="about" aria-labelledby="about-title" className="section about">
+      <div className="about-head">
+        <Eyebrow index={sectionIndex("about")} className="reveal">
+          Who I am
+        </Eyebrow>
+        <h2 id="about-title" className="h-display reveal">
+          {richText(statement)}
+        </h2>
+        <p className="lede reveal">
+          {site.focus}. {site.availability}.
+        </p>
+        <div className="btn-row reveal">
+          <BtnLink href="#contact">Get in touch</BtnLink>
+          {github && (
+            <BtnLink href={github.href} variant="ghost" target="_blank" rel="noreferrer noopener">
+              <github.Icon className="h-4 w-4" aria-hidden /> GitHub
+            </BtnLink>
+          )}
+        </div>
+      </div>
 
-      <div className="grid gap-12 lg:grid-cols-12">
-        {hasBio && (
-          <div className="space-y-5 text-ink-2 lg:col-span-7">
+      {has(stats) && <HudStats stats={stats} />}
+
+      <div className="about-grid">
+        {has(about.bio) && (
+          <article className="glass spot hud-frame about-bio reveal">
+            <WindowBar file="about.md" meta="markdown · 3 ¶" />
             {about.bio.map((p, i) => (
-              <p key={i} className="reveal max-w-prose" style={{ "--i": i } as CSSProperties}>
+              <p key={i} className={i === 0 ? "about-bio__lead" : undefined}>
                 {p}
               </p>
             ))}
-          </div>
+          </article>
         )}
 
-        <dl className={cn("grid gap-10", hasBio ? "lg:col-span-5" : "sm:grid-cols-2 lg:col-span-12 lg:grid-cols-3")}>
+        <div className="glass spot hud-frame about-facts reveal" style={{ "--d": 1 } as CSSProperties}>
+          <WindowBar file="status.json" meta="live" live />
+          <dl className="about-facts__list">
           {has(about.research) && (
-            <div className="reveal">
-              <dt className="label-mono">Currently exploring</dt>
-              <dd className="mt-4">
-                <ul className="flex flex-wrap gap-2">
-                  {about.research.map((r) => (
-                    <li key={r}>
-                      <Tag className="border-violet/40 text-ink">{r}</Tag>
-                    </li>
-                  ))}
-                </ul>
+            <div>
+              <dt className="label">Currently exploring</dt>
+              <dd className="chip-row">
+                {about.research.map((r) => (
+                  <Chip key={r} tone="cyan">
+                    {r}
+                  </Chip>
+                ))}
               </dd>
             </div>
           )}
-
           {has(about.hobbies) && (
-            <div className="reveal" style={{ "--i": 1 } as CSSProperties}>
-              <dt className="label-mono">Off-screen</dt>
-              <dd className="mt-4">
-                <ul className="grid grid-cols-2 gap-3">
+            <div>
+              <dt className="label">Off-screen</dt>
+              <dd>
+                <ul className="hobbies">
                   {about.hobbies.map(({ label, Icon }) => (
-                    <li key={label} className="flex items-center gap-2.5 text-ink-2">
-                      <Icon className="h-4 w-4 text-ink-3" aria-hidden />
+                    <li key={label}>
+                      <Icon className="h-[1.1em] w-[1.1em]" aria-hidden />
                       {label}
                     </li>
                   ))}
@@ -54,16 +75,32 @@ export default function About() {
               </dd>
             </div>
           )}
-
-          <div className="reveal" style={{ "--i": 2 } as CSSProperties}>
-            <dt className="label-mono">Based in</dt>
-            <dd className="mt-4 text-ink-2">
-              {site.location}
-              <span className="block font-mono text-xs text-ink-3">{site.timezone}</span>
+          <div>
+            <dt className="label">Reach me</dt>
+            <dd>
+              <a href={`mailto:${site.email}`} className="link">
+                {site.email}
+              </a>
             </dd>
           </div>
-        </dl>
+          </dl>
+        </div>
       </div>
     </section>
+  );
+}
+
+/** Terminal-style title bar for the glass windows. */
+function WindowBar({ file, meta, live }: { file: string; meta: string; live?: boolean }) {
+  return (
+    <div className="winbar" aria-hidden>
+      <span className="winbar__dots">
+        <i />
+        <i />
+        <i />
+      </span>
+      <span className="winbar__file">{file}</span>
+      <span className={live ? "winbar__meta chip--live-dot" : "winbar__meta"}>{meta}</span>
+    </div>
   );
 }

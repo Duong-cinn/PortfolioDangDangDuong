@@ -1,0 +1,105 @@
+/* Dev-only styles for the social card page (og.html). */
+.og {
+  --u: 1px;
+  position: relative;
+  width: 1200px;
+  height: 630px;
+  overflow: hidden;
+  background: #070a22;
+  font-family: "Inter Tight Variable", system-ui, sans-serif;
+  color: #f4f2ff;
+}
+.og .scene-layer {
+  position: absolute;
+  inset: 0;
+}
+.og__canvas {
+  position: absolute;
+  inset: 0;
+  width: 1200px;
+  height: 630px;
+}
+.og__text {
+  position: absolute;
+  left: 72px;
+  top: 150px;
+  width: 640px;
+}
+.og__meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 15px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #c8c5ec;
+}
+.og__rule {
+  width: 30px;
+  height: 1px;
+  background: #9894cc;
+}
+.og__name {
+  margin-top: 22px;
+  font-weight: 300;
+  font-size: 86px;
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  text-shadow: 0 6px 40px rgba(5, 6, 30, 0.6);
+}
+.og__role {
+  margin-top: 18px;
+  font-size: 32px;
+  letter-spacing: -0.01em;
+  color: #c8c5ec;
+}
+.og__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 34px;
+}
+.og__chips li {
+  padding: 7px 14px;
+  border: 1px solid rgba(95, 227, 255, 0.4);
+  background: rgba(18, 14, 66, 0.55);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 15px;
+  color: #f4f2ff;
+  /* HUD corners */
+  box-shadow: inset 0 0 0 1px rgba(95, 227, 255, 0.05);
+}
+.og__brand {
+  position: absolute;
+  left: 72px;
+  bottom: 44px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  font-size: 22px;
+}
+.og__brand .orb {
+  width: 30px;
+  height: 30px;
+}
+.og__url {
+  margin-left: 10px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 14px;
+  font-weight: 400;
+  color: #9894cc;
+}
+.og-icon {
+  --u: 1px;
+  display: grid;
+  place-items: center;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle at 50% 60%, #1c184e, #070a22 70%);
+}
+.og-icon .orb {
+  width: 112px;
+  height: 112px;
+}

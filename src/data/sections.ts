@@ -1,7 +1,7 @@
 import * as config from "./config";
 import { has } from "./config";
 
-export type SectionId = "about" | "skills" | "trajectory" | "projects" | "certificates" | "contact";
+export type SectionId = "about" | "skills" | "projects" | "trajectory" | "contact";
 
 export type SectionMeta = { id: SectionId; label: string; visible: boolean };
 
@@ -15,9 +15,9 @@ export function buildSections(c: ContentShape): SectionMeta[] {
   return [
     { id: "about", label: "About", visible: has(c.about.bio) || has(c.about.research) || has(c.about.hobbies) },
     { id: "skills", label: "Skills", visible: c.skillGroups.some((g) => has(g.items)) },
-    { id: "trajectory", label: "Journey", visible: has(c.experience) || has(c.education) },
     { id: "projects", label: "Work", visible: has(c.projects) },
-    { id: "certificates", label: "Proof", visible: has(c.certificates) },
+    // Journey = education + experience + certificates as one climbing route
+    { id: "trajectory", label: "Journey", visible: has(c.experience) || has(c.education) || has(c.certificates) },
     { id: "contact", label: "Contact", visible: true },
   ];
 }

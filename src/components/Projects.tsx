@@ -1,123 +1,179 @@
 import { useRef, type CSSProperties } from "react";
-import { ArrowUpRight, Github } from "lucide-react";
-import { filled, has, projects, type Project } from "@/data/config";
+import { Activity, BrainCircuit, Mountain, Orbit, type LucideIcon } from "lucide-react";
+import { about, education, filled, has, process, projects, site, skillGroups, socials, type Project } from "@/data/config";
 import { sectionIndex } from "@/data/sections";
 import { useTilt } from "@/hooks/useTilt";
-import { hasFeaturedProject } from "@/lib/layout";
+import { projectColumns } from "@/lib/layout";
 import { cn } from "@/lib/utils";
-import SectionHeading from "./SectionHeading";
-import { cardClass } from "./ui/Card";
-import { Tag } from "./ui/Tag";
+import TypingCode from "./TypingCode";
+import { BtnLink, Eyebrow } from "./ui/Btn";
 
-/** Projects = the satellites of the hero orbit. Hidden when `projects` is empty. */
+const ICONS: LucideIcon[] = [Orbit, BrainCircuit, Activity, Mountain];
+
+/** The "profile" object typed in the code block — built from real config data. */
+function profileCode() {
+  const top = skillGroups.flatMap((g) => g.items.slice(0, 2).map((i) => `"${i.name}"`));
+  const edu = education[0];
+  const lines = [
+    `export const duong = {`,
+    `  role: "${site.role}",`,
+    edu ? `  school: "VNU-IS · ${edu.period.replace(/\s*—\s*/, " → ")}",` : null,
+    `  based: "${site.location} (${site.timezone})",`,
+    `  stack: [${top.slice(0, 4).join(", ")}],`,
+    has(about.research) ? ["  exploring: [", ...about.research.map((r) => `    "${r}",`), "  ],"].join("\n") : null,
+    `  openToWork: true,`,
+    `};`,
+  ];
+  return lines.filter(Boolean).join("\n");
+}
+
 export default function Projects() {
   if (!has(projects)) return null;
-  const featured = hasFeaturedProject(projects.length);
+  const cols = projectColumns(projects.length);
+  const github = socials.find((s) => s.name === "GitHub");
 
   return (
-    <section id="projects" aria-labelledby="projects-title" className="section-y container-x">
-      <SectionHeading
-        id="projects-title"
-        index={sectionIndex("projects")}
-        eyebrow="Satellites"
-        title="Selected work"
-        description="Each project is a satellite in the orbit above — launched, then kept in motion."
-      />
-      <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <section id="projects" aria-labelledby="projects-title" className="section work">
+      <div className="split">
+        <div className="reveal">
+          <Eyebrow index={sectionIndex("projects")}>Selected work</Eyebrow>
+          <h2 id="projects-title" className="h-display">
+            Build boldly, ship small, learn fast, <span className="accent">measure</span> <em className="serif">truth.</em>
+          </h2>
+          <p className="lede">
+            Each project is a satellite of the orbit — a real problem, a clear role, and a result I can point to.
+          </p>
+          <div className="btn-row">
+            {github && (
+              <BtnLink href={github.href} variant="white" target="_blank" rel="noreferrer noopener">
+                <github.Icon className="h-4 w-4" aria-hidden /> GitHub profile
+              </BtnLink>
+            )}
+            <BtnLink href="#contact" variant="dark">
+              Get in touch
+            </BtnLink>
+          </div>
+        </div>
+
+        <figure className="code reveal" aria-hidden style={{ "--d": 1 } as CSSProperties}>
+          <figcaption className="code__head">
+            <span>profile.ts</span>
+            <span>TypeScript 5</span>
+          </figcaption>
+          <TypingCode code={profileCode()} className="code__body" />
+          <div className="code__foot">
+            <span>~/ninh-binh</span>
+            <span className="chip--live-dot">ready</span>
+          </div>
+        </figure>
+      </div>
+
+      <ul className="cards" style={{ "--cols": cols } as CSSProperties}>
         {projects.map((p, i) => (
-          <li
-            key={p.title}
-            className={cn("reveal", featured && i === 0 && "lg:col-span-2")}
-            style={{ "--i": i } as CSSProperties}
-          >
-            <ProjectCard project={p} index={i} featured={featured && i === 0} />
+          <li key={p.title} className="reveal" style={{ "--d": i % cols } as CSSProperties}>
+            <ProjectCard project={p} index={i} lead={i === 0} />
           </li>
         ))}
       </ul>
+
+      {has(process) && (
+        <ol className="steps reveal">
+          {process.map((s) => (
+            <li key={s.lead}>
+              <span>
+                <b>{s.lead}</b> {s.body}
+              </span>
+            </li>
+          ))}
+        </ol>
+      )}
     </section>
   );
 }
 
-function ProjectCard({ project: p, index, featured }: { project: Project; index: number; featured: boolean }) {
-  const code = `S-${String(index + 1).padStart(2, "0")}`;
+function ProjectCard({ project: p, index, lead }: { project: Project; index: number; lead: boolean }) {
   const ref = useRef<HTMLElement>(null);
   useTilt(ref);
+  const Icon = ICONS[index % ICONS.length];
+  const code = `MSN-${String(index + 1).padStart(2, "0")}`;
+  const status = filled(p.demo) ? "Live" : filled(p.github) ? "Code" : "Concept";
+  const link = filled(p.demo) ? p.demo : filled(p.github) ? p.github : null;
+
   return (
-    <article
-      ref={ref}
-      className={cn("tilt group relative flex h-full flex-col overflow-hidden hover:border-cyan/40", cardClass)}
-    >
+    <article ref={ref} className={cn("card mission glass spot tilt hud-frame holo", lead && "mission--lead")}>
       <span aria-hidden className="tilt-glare" />
-      <div className={cn("relative overflow-hidden bg-elevated", featured ? "aspect-[21/9]" : "aspect-[16/10]")}>
-        {filled(p.image) ? (
-          <img
-            src={p.image}
-            alt=""
-            loading="lazy"
-            decoding="async"
-            className="h-full w-full object-cover transition-transform duration-slow ease-out-expo group-hover:scale-[1.03]"
-          />
-        ) : (
-          <SatelliteArt seed={index} />
-        )}
-        <span className="absolute left-4 top-4 rounded-full border border-line bg-bg/70 px-2.5 py-1 font-mono text-[11px] text-ink-2 backdrop-blur">
-          {code}
+      <div className="mission__head">
+        <span>
+          {code} · {p.role}
+        </span>
+        <span className={cn("mission__status", status === "Concept" ? "is-concept" : "is-live")}>{status}</span>
+      </div>
+
+      <div className="mission__screen" aria-hidden>
+        {filled(p.image) ? <img src={p.image} alt="" loading="lazy" decoding="async" /> : <OrbitScreen seed={index} />}
+        <Icon className="mission__icon" strokeWidth={1.3} />
+        <span className="mission__readout">
+          ORB {(0.31 + ((index * 0.137) % 0.5)).toFixed(2)} · INC {12 + ((index * 17) % 40)}°
         </span>
       </div>
 
-      <div className="flex flex-1 flex-col p-6">
-        {filled(p.role) && <p className="label-mono">{p.role}</p>}
-        <h3 className="mt-2 text-h3">{p.title}</h3>
-        <p className="mt-3 text-sm text-ink-2">{p.problem}</p>
-        {filled(p.result) && (
-          <p className="mt-3 border-l-2 border-cyan/60 pl-3 text-sm text-ink">{p.result}</p>
-        )}
-        <ul className="mt-5 flex flex-wrap gap-1.5" aria-label="Tech stack">
-          {p.stack.map((t) => (
-            <li key={t}>
-              <Tag>{t}</Tag>
-            </li>
-          ))}
-        </ul>
-        <div className="mt-auto flex gap-5 pt-6 text-sm">
-          {filled(p.demo) && (
-            <a href={p.demo} target="_blank" rel="noreferrer noopener" className="link-underline inline-flex items-center gap-1">
-              Live <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
-              <span className="sr-only">: {p.title} (opens in a new tab)</span>
-            </a>
-          )}
-          {filled(p.github) && (
-            <a href={p.github} target="_blank" rel="noreferrer noopener" className="link-underline inline-flex items-center gap-1 text-ink-2">
-              <Github className="h-3.5 w-3.5" aria-hidden /> Code
-              <span className="sr-only">: {p.title} (opens in a new tab)</span>
-            </a>
+      <h3 className="card__title">{p.title}</h3>
+      <p className="card__body">{p.problem}</p>
+
+      <p className="mission__label">Modules</p>
+      <ul className="mission__modules" aria-label="Tech stack">
+        {p.stack.map((t) => (
+          <li key={t}>{t}</li>
+        ))}
+      </ul>
+
+      <div className="card__meta">
+        <div>
+          {filled(p.result) && (
+            <>
+              <p className="mission__label">Outcome</p>
+              <p className="card__result">{p.result}</p>
+            </>
           )}
         </div>
+        {link ? (
+          <a href={link} target="_blank" rel="noreferrer noopener" className="mission__launch">
+            Launch →<span className="sr-only">: {p.title} (opens in a new tab)</span>
+          </a>
+        ) : (
+          <span className="card__soon">Briefing soon</span>
+        )}
       </div>
     </article>
   );
 }
 
-/** Generated cover for projects without an image: a satellite on its own orbit. */
-function SatelliteArt({ seed }: { seed: number }) {
-  const tilt = -24 + ((seed * 37) % 48);
-  const angle = (seed * 1.7) % (Math.PI * 2);
+/** Preview screen for projects without an image: a satellite on its orbit, seeded per project. */
+function OrbitScreen({ seed }: { seed: number }) {
+  const tilt = -22 + ((seed * 37) % 44);
+  const angle = (seed * 1.9 + 0.6) % (Math.PI * 2);
   const x = 200 + Math.cos(angle) * 150;
-  const y = 100 + Math.sin(angle) * 46;
+  const y = 90 + Math.sin(angle) * 42;
   return (
-    <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" className="h-full w-full" aria-hidden>
+    <svg viewBox="0 0 400 180" preserveAspectRatio="xMidYMid slice" className="mission__art">
       <defs>
-        <radialGradient id={`sat-${seed}`} cx="50%" cy="50%" r="60%">
-          <stop offset="0%" stopColor="rgb(var(--violet))" stopOpacity="0.18" />
-          <stop offset="100%" stopColor="rgb(var(--violet))" stopOpacity="0" />
+        <radialGradient id={`ms-core-${seed}`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#fff" />
+          <stop offset="35%" stopColor="#8d94ff" />
+          <stop offset="100%" stopColor="#2b1f8f" stopOpacity="0" />
         </radialGradient>
       </defs>
-      <rect width="400" height="200" fill={`url(#sat-${seed})`} />
-      <g transform={`rotate(${tilt} 200 100)`}>
-        <ellipse cx="200" cy="100" rx="150" ry="46" fill="none" className="stroke-ink-3" strokeOpacity="0.5" />
-        <ellipse cx="200" cy="100" rx="96" ry="30" fill="none" className="stroke-cyan" strokeOpacity="0.35" strokeDasharray="2 6" />
-        <circle cx="200" cy="100" r="16" className="fill-ink-3" fillOpacity="0.35" />
-        <rect x={x - 6} y={y - 6} width="12" height="12" transform={`rotate(45 ${x} ${y})`} className="fill-cyan" />
+      <g transform={`rotate(${tilt} 200 90)`}>
+        <ellipse cx="200" cy="90" rx="150" ry="42" fill="none" stroke="rgba(160,170,255,0.45)" />
+        <ellipse cx="200" cy="90" rx="100" ry="28" fill="none" stroke="rgba(95,227,255,0.5)" strokeDasharray="2 6" />
+        <circle cx="200" cy="90" r="26" fill={`url(#ms-core-${seed})`} />
+        <g className="mission__sat" style={{ transformOrigin: "200px 90px" }}>
+          <rect x={x - 6} y={y - 6} width="12" height="12" transform={`rotate(45 ${x} ${y})`} fill="#5fe3ff" />
+          <circle cx={x} cy={y} r="14" fill="none" stroke="rgba(95,227,255,0.5)" />
+        </g>
+      </g>
+      <g stroke="rgba(95,227,255,0.35)" strokeWidth="1">
+        <path d="M14 14h18M14 14v18M386 14h-18M386 14v18M14 166h18M14 166v-18M386 166h-18M386 166v-18" fill="none" />
       </g>
     </svg>
   );

@@ -1,42 +1,52 @@
-import type { ComponentType } from "react";
+import { useEffect, type ComponentType } from "react";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import About from "@/components/About";
 import Skills from "@/components/Skills";
 import Trajectory from "@/components/Trajectory";
 import Projects from "@/components/Projects";
-import Certificates from "@/components/Certificates";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
-import KarstDivider from "@/components/KarstDivider";
+import Backdrop from "@/components/Backdrop";
 import CommandPalette from "@/components/CommandPalette";
+import AltitudeRail from "@/components/AltitudeRail";
 import { visibleSections, type SectionId } from "@/data/sections";
+import { useInteractions } from "@/hooks/useInteractions";
 import { useReveal } from "@/hooks/useReveal";
+import { startSmoothScroll, stopSmoothScroll } from "@/lib/smoothScroll";
 
 const registry: Record<SectionId, ComponentType> = {
   about: About,
   skills: Skills,
-  trajectory: Trajectory,
   projects: Projects,
-  certificates: Certificates,
+  trajectory: Trajectory,
   contact: Contact,
 };
 
 export default function App() {
   useReveal();
+  useInteractions();
+  useEffect(() => {
+    void startSmoothScroll();
+    return stopSmoothScroll;
+  }, []);
+
   return (
-    <div className="flex min-h-screen flex-col">
-      <Navbar />
-      <main id="main" tabIndex={-1} className="flex-1 outline-none">
-        <Hero />
-        <KarstDivider />
-        {visibleSections.map(({ id }) => {
-          const Section = registry[id];
-          return <Section key={id} />;
-        })}
-      </main>
-      <Footer />
+    <>
+      <Backdrop />
+      <div className="page">
+        <Navbar />
+        <main id="main" tabIndex={-1} className="outline-none">
+          <Hero />
+          {visibleSections.map(({ id }) => {
+            const Section = registry[id];
+            return <Section key={id} />;
+          })}
+        </main>
+        <Footer />
+      </div>
+      <AltitudeRail />
       <CommandPalette />
-    </div>
+    </>
   );
 }
