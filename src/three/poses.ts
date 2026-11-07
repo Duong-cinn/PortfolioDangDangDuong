@@ -8,12 +8,12 @@ import type { Pose, PoseStop } from "./spaceScene";
 type Key = "hero" | "about" | "console" | "projects" | "trajectory" | "end";
 
 const desktop: Record<Key, Pose> = {
-  hero: { x: 0.42, y: 0.12, s: 0.7, yaw: -0.62, pitch: 0.2, roll: -0.42 },
-  about: { x: -0.76, y: 0.12, s: 0.34, yaw: 0.55, pitch: 0.22, roll: 0.3 },
-  console: { x: 0.62, y: -0.62, s: 0.44, yaw: -0.4, pitch: 0.32, roll: 0.2 },
-  projects: { x: 0.12, y: -0.72, s: 0.44, yaw: 0.45, pitch: 0.1, roll: -0.25 },
-  trajectory: { x: 0.58, y: -0.52, s: 0.55, yaw: 0.35, pitch: 0.55, roll: -0.15 },
-  end: { x: 0.68, y: 0.5, s: 0.36, yaw: -0.5, pitch: 0.35, roll: -0.3 },
+  hero: { x: 0.42, y: 0.12, s: 0.56, yaw: -0.62, pitch: 0.2, roll: -0.42 },
+  about: { x: -0.76, y: 0.12, s: 0.272, yaw: 0.55, pitch: 0.22, roll: 0.3 },
+  console: { x: 0.62, y: -0.62, s: 0.352, yaw: -0.4, pitch: 0.32, roll: 0.2 },
+  projects: { x: 0.12, y: -0.72, s: 0.352, yaw: 0.45, pitch: 0.1, roll: -0.25 },
+  trajectory: { x: 0.58, y: -0.52, s: 0.44, yaw: 0.35, pitch: 0.55, roll: -0.15 },
+  end: { x: 0.68, y: 0.5, s: 0.288, yaw: -0.5, pitch: 0.35, roll: -0.3 },
 };
 
 const phone: Record<Key, Pick<Pose, "x" | "y" | "s">> = {

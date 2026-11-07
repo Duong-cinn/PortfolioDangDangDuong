@@ -139,6 +139,7 @@ export const skillGroups: SkillGroup[] = [
       { name: "scikit-learn" },
       { name: "Pandas & NumPy" },
       { name: "OpenCV" },
+      { name: "Vercel AI SDK" },
     ],
   },
   {
@@ -151,6 +152,7 @@ export const skillGroups: SkillGroup[] = [
       { name: "Express" },
       { name: "FastAPI" },
       { name: "PostgreSQL" },
+      { name: "Supabase" },
     ],
   },
   {
@@ -191,14 +193,28 @@ export const education: Education[] = [
   },
 ];
 
-// SAMPLE — every project below is a placeholder. Links are left empty on purpose (no dead links).
+/** Projects = the satellites of the orbit. The first one gets the highlighted "lead" card. */
 export const projects: Project[] = [
   {
+    title: "GoalPulse AI",
+    problem:
+      "A habit and goal tracker that grows like a garden: every habit is a 3D plant, and an AI coach reads your real progress and can act on it.",
+    role: "Solo · full-stack & AI",
+    stack: ["Next.js", "TypeScript", "Supabase", "React Three Fiber", "Vercel AI SDK"],
+    result: "Live app: 3D habit garden, AI coach with undoable tool calls, 365-day analytics computed in SQL, RLS on every table.",
+    github: "https://github.com/Duong-cinn/Goalpulse-ai",
+    demo: "https://goalpulse-ai.vercel.app",
+    image: "/projects/goalpulse.jpg",
+  },
+  {
     title: "Digital Orbit Portfolio",
-    problem: "A personal site where the hero object is generated from my real skill data instead of decoration.",
+    problem: "This site: a scroll-driven 3D story where the ship, planets and data sea frame real content instead of decorating it.",
     role: "Design & development",
-    stack: ["React", "TypeScript", "Three.js", "Tailwind"],
-    result: "Initial JS ≈ 73 kB gzip; the 3D scene loads lazily and falls back to a static SVG.",
+    stack: ["React", "TypeScript", "Three.js", "Tailwind", "Lenis"],
+    result: "Initial JS ≈ 74 kB gzip; the 3D scene loads lazily after first paint, with a CSS backdrop as fallback.",
+    github: "https://github.com/Duong-cinn/PortfolioDangDangDuong",
+    demo: "https://portfolio-dang-dang-duong.vercel.app",
+    image: "/projects/digital-orbit.jpg",
   },
   {
     title: "Study Buddy AI", // SAMPLE
@@ -213,12 +229,6 @@ export const projects: Project[] = [
     role: "Computer vision & frontend",
     stack: ["Python", "OpenCV", "PyTorch", "TypeScript"],
     result: "Counts reps from a webcam and flags shallow depth in real time.", // SAMPLE
-  },
-  {
-    title: "Route Log", // SAMPLE
-    problem: "Climbers track sessions in notes apps and can't see progress over time.",
-    role: "Frontend",
-    stack: ["Next.js", "TypeScript", "PostgreSQL"],
   },
 ];
 

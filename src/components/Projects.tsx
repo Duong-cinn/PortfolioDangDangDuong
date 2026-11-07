@@ -112,9 +112,11 @@ function ProjectCard({ project: p, index, lead }: { project: Project; index: num
       <div className="mission__screen" aria-hidden>
         {filled(p.image) ? <img src={p.image} alt="" loading="lazy" decoding="async" /> : <OrbitScreen seed={index} />}
         <Icon className="mission__icon" strokeWidth={1.3} />
-        <span className="mission__readout">
+        {!filled(p.image) && (
+          <span className="mission__readout">
           ORB {(0.31 + ((index * 0.137) % 0.5)).toFixed(2)} · INC {12 + ((index * 17) % 40)}°
         </span>
+        )}
       </div>
 
       <h3 className="card__title">{p.title}</h3>

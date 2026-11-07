@@ -30,146 +30,107 @@ function rand(seed: number) {
   };
 }
 
-/** Fuselage (lathe UVs: u = around the hull, v = tail → nose; top of the ship is u ≈ 0.75). */
+/**
+ * Fuselage textures (lathe UVs: u = around the hull, v = tail → nose; top of the ship is u ≈ 0.75).
+ * Clean and high-res on purpose: no random tint blocks or repeated grids (they read as blurry squares),
+ * just a pearl base, a few crisp panel seams, a dorsal stripe and decals. Emissive map = glowing seams.
+ */
 function hullTextures() {
-  const W = 1024;
-  const H = 512;
+  const W = 2048;
+  const H = 1024;
   const [c, g] = canvas(W, H);
   const [e, ge] = canvas(W, H);
-  const r = rand(11);
 
-  // base: cool silver → lilac along the length
+  // pearl base, very slightly cooler toward the tail
   const base = g.createLinearGradient(0, H, 0, 0);
-  base.addColorStop(0, "#c9c6ee");
-  base.addColorStop(0.5, "#e6e8fb");
-  base.addColorStop(1, "#f4f5ff");
+  base.addColorStop(0, "#dfe2f3");
+  base.addColorStop(0.55, "#eef0fa");
+  base.addColorStop(1, "#f7f8ff");
   g.fillStyle = base;
   g.fillRect(0, 0, W, H);
   ge.fillStyle = "#000";
   ge.fillRect(0, 0, W, H);
 
-  // subtle panel tint variation
-  for (let i = 0; i < 70; i++) {
-    g.fillStyle = `rgba(${120 + r() * 40},${110 + r() * 40},${200 + r() * 40},${0.06 + r() * 0.08})`;
-    g.fillRect(r() * W, r() * H, 40 + r() * 140, 20 + r() * 60);
-  }
+  const y = (v: number) => (1 - v) * H;
 
-  // panel lines: rings along the length + seams around
-  g.strokeStyle = "rgba(48,40,110,0.55)";
+  // a few crisp panel seams: rings along the length + symmetric seams around
+  g.strokeStyle = "rgba(52,50,110,0.32)";
   g.lineWidth = 2;
-  const rings = [0.1, 0.2, 0.31, 0.42, 0.55, 0.66, 0.78, 0.88];
+  const rings = [0.16, 0.38, 0.6, 0.8];
   for (const v of rings) {
     g.beginPath();
-    g.moveTo(0, (1 - v) * H);
-    g.lineTo(W, (1 - v) * H);
+    g.moveTo(0, y(v));
+    g.lineTo(W, y(v));
     g.stroke();
   }
-  for (let i = 0; i < rings.length - 1; i++) {
-    const seams = 6 + Math.floor(r() * 4);
-    for (let k = 0; k < seams; k++) {
-      const x = ((k + r() * 0.3) / seams) * W;
+  for (const u of [0.125, 0.375, 0.625, 0.875]) {
+    for (let i = 0; i < rings.length - 1; i += 2) {
       g.beginPath();
-      g.moveTo(x, (1 - rings[i]) * H);
-      g.lineTo(x, (1 - rings[i + 1]) * H);
+      g.moveTo(u * W, y(rings[i]));
+      g.lineTo(u * W, y(rings[i + 1]));
       g.stroke();
     }
   }
-  // rivets
-  g.fillStyle = "rgba(40,34,100,0.5)";
-  for (const v of rings) for (let x = 0; x < W; x += 16) g.fillRect(x, (1 - v) * H + 4, 2, 2);
+  // tidy rivet rows beside the seams
+  g.fillStyle = "rgba(52,50,110,0.22)";
+  for (const v of rings) for (let x = 12; x < W; x += 28) g.fillRect(x, y(v) + 7, 3, 3);
 
-  // glowing grooves (emissive): a few panel seams + the dorsal stripe
-  ge.strokeStyle = "rgba(95,227,255,0.9)";
-  ge.lineWidth = 2;
-  for (const v of [0.31, 0.55, 0.78]) {
+  // glowing seams (emissive)
+  ge.strokeStyle = "rgba(95,227,255,0.95)";
+  ge.lineWidth = 3;
+  for (const v of [0.38, 0.6]) {
     ge.beginPath();
-    ge.moveTo(0, (1 - v) * H);
-    ge.lineTo(W, (1 - v) * H);
+    ge.moveTo(0, y(v));
+    ge.lineTo(W, y(v));
     ge.stroke();
   }
 
-  // dorsal racing stripe (top, u≈0.75) + pink pinstripe
+  // dorsal stripe (top, u ≈ 0.75) with pink pinstripes
   const stripe = (ctx: CanvasRenderingContext2D, color: string, u: number, w: number) => {
     ctx.fillStyle = color;
-    ctx.fillRect(u * W - (w * W) / 2, H * 0.08, w * W, H * 0.8);
+    ctx.fillRect(u * W - (w * W) / 2, y(0.92), w * W, H * 0.78);
   };
-  stripe(g, "#5fe3ff", 0.75, 0.035);
-  stripe(g, "#ff8fd8", 0.712, 0.008);
-  stripe(g, "#ff8fd8", 0.788, 0.008);
-  stripe(ge, "#5fe3ff", 0.75, 0.035);
-  stripe(ge, "rgba(255,143,216,0.8)", 0.712, 0.008);
-  stripe(ge, "rgba(255,143,216,0.8)", 0.788, 0.008);
+  stripe(g, "#5fe3ff", 0.75, 0.02);
+  stripe(g, "#ff8fd8", 0.722, 0.004);
+  stripe(g, "#ff8fd8", 0.778, 0.004);
+  stripe(ge, "#5fe3ff", 0.75, 0.02);
+  stripe(ge, "rgba(255,143,216,0.9)", 0.722, 0.004);
+  stripe(ge, "rgba(255,143,216,0.9)", 0.778, 0.004);
 
-  // side decals: "DO-01" along the length, on both flanks (u ≈ 0 and 0.5)
+  // flank decals (u ≈ 0 / 0.5 / 1): call sign + chevrons, and a row of lit windows
   for (const u of [0.0, 0.5, 1.0]) {
     g.save();
-    g.translate(u * W, H * 0.62);
+    g.translate(u * W, y(0.5));
     g.rotate(-Math.PI / 2);
-    g.fillStyle = "rgba(30,26,90,0.85)";
-    g.font = "bold 34px monospace";
     g.textAlign = "center";
-    g.fillText("DO-01", 0, 12);
-    g.fillStyle = "rgba(95,227,255,0.9)";
-    g.fillRect(-60, 22, 120, 4);
+    g.fillStyle = "rgba(30,28,92,0.9)";
+    g.font = "600 60px 'JetBrains Mono', monospace";
+    g.fillText("DO-01", 0, 20);
+    g.fillStyle = "#5fe3ff";
+    g.fillRect(-90, 38, 180, 5);
+    g.fillStyle = "rgba(30,28,92,0.7)";
+    for (let k = 0; k < 3; k++) {
+      g.beginPath();
+      g.moveTo(130 + k * 26, -14);
+      g.lineTo(146 + k * 26, 0);
+      g.lineTo(130 + k * 26, 14);
+      g.lineWidth = 5;
+      g.strokeStyle = "rgba(30,28,92,0.6)";
+      g.stroke();
+    }
     g.restore();
-    // small glowing "windows"
-    for (let k = 0; k < 4; k++) {
-      ge.fillStyle = "rgba(190,245,255,0.95)";
-      ge.fillRect(u * W - 3, H * (0.25 + k * 0.035), 6, 6);
+    for (let k = 0; k < 5; k++) {
+      ge.fillStyle = "rgba(200,248,255,1)";
+      ge.fillRect(u * W - 5, y(0.68 + k * 0.025), 10, 8);
     }
   }
 
   const map = new THREE.CanvasTexture(c);
   map.colorSpace = THREE.SRGBColorSpace;
-  map.anisotropy = 4;
+  map.anisotropy = 16;
   const emissive = new THREE.CanvasTexture(e);
   emissive.colorSpace = THREE.SRGBColorSpace;
-  return { map, emissive };
-}
-
-/** Wings (extrude UVs = shape x/y ≈ -0.35…0.12 / 0…0.5 → repeat). */
-function wingTextures() {
-  const S = 512;
-  const [c, g] = canvas(S, S);
-  const [e, ge] = canvas(S, S);
-  g.fillStyle = "#b3b6ff";
-  g.fillRect(0, 0, S, S);
-  ge.fillStyle = "#000";
-  ge.fillRect(0, 0, S, S);
-  const r = rand(5);
-  for (let i = 0; i < 40; i++) {
-    g.fillStyle = `rgba(${150 + r() * 50},${150 + r() * 50},255,${0.15 + r() * 0.15})`;
-    g.fillRect(r() * S, r() * S, 30 + r() * 90, 30 + r() * 90);
-  }
-  g.strokeStyle = "rgba(40,34,110,0.5)";
-  g.lineWidth = 2;
-  for (let i = 0; i <= 8; i++) {
-    g.beginPath();
-    g.moveTo(0, (i / 8) * S);
-    g.lineTo(S, (i / 8) * S);
-    g.stroke();
-    g.beginPath();
-    g.moveTo((i / 8) * S, 0);
-    g.lineTo((i / 8) * S, S);
-    g.stroke();
-  }
-  // chevrons + glowing grooves
-  ge.strokeStyle = "rgba(95,227,255,0.85)";
-  ge.lineWidth = 3;
-  for (let i = 0; i < 3; i++) {
-    ge.beginPath();
-    ge.moveTo(0, S * (0.3 + i * 0.2));
-    ge.lineTo(S, S * (0.3 + i * 0.2) - S * 0.15);
-    ge.stroke();
-  }
-  const map = new THREE.CanvasTexture(c);
-  map.colorSpace = THREE.SRGBColorSpace;
-  map.wrapS = map.wrapT = THREE.RepeatWrapping;
-  map.repeat.set(2.4, 2.4);
-  const emissive = new THREE.CanvasTexture(e);
-  emissive.colorSpace = THREE.SRGBColorSpace;
-  emissive.wrapS = emissive.wrapT = THREE.RepeatWrapping;
-  emissive.repeat.set(2.4, 2.4);
+  emissive.anisotropy = 16;
   return { map, emissive };
 }
 
@@ -181,7 +142,7 @@ function glossy(opts: THREE.MeshPhysicalMaterialParameters) {
     metalness: 0.6,
     clearcoat: 1,
     clearcoatRoughness: 0.05,
-    iridescence: 0.7,
+    iridescence: 0.3,
     iridescenceIOR: 1.35,
     iridescenceThicknessRange: [200, 600],
     envMapIntensity: 1.35,
@@ -210,10 +171,12 @@ const exhaustFragment = /* glsl */ `
 export function buildShip(): Ship {
   const group = new THREE.Group();
   const hullTex = hullTextures();
-  const wingTex = wingTextures();
 
-  const hull = glossy({ map: hullTex.map, emissive: new THREE.Color(0xffffff), emissiveMap: hullTex.emissive, emissiveIntensity: 1.1, flatShading: true });
-  const wingMat = glossy({ map: wingTex.map, emissive: new THREE.Color(0xffffff), emissiveMap: wingTex.emissive, emissiveIntensity: 0.9, metalness: 0.5 });
+  // two-tone: pearl hull, deep steel-blue wings; glow comes from geometry (strips, edges), not textures
+  const hull = glossy({ map: hullTex.map, emissive: new THREE.Color(0xffffff), emissiveMap: hullTex.emissive, emissiveIntensity: 1.1, roughness: 0.12, metalness: 0.45 });
+  const wingMat = glossy({ color: 0x3a4fae, metalness: 0.72, roughness: 0.14, iridescence: 0.3, envMapIntensity: 1.7 });
+  const lightStrip = new THREE.MeshBasicMaterial({ color: 0x7ff0ff });
+  const lightStripPink = new THREE.MeshBasicMaterial({ color: 0xff8fd8 });
   const dark = glossy({ color: 0x2a2660, metalness: 0.8, roughness: 0.25, iridescence: 0.3 });
   const chrome = glossy({ color: 0xf0f2ff, metalness: 1, roughness: 0.08, iridescence: 0.4 });
   const glowLine = new THREE.LineBasicMaterial({ color: 0x5fe3ff, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false });
@@ -237,12 +200,34 @@ export function buildShip(): Ship {
     [0.05, -0.5], [0.074, -0.47], [0.086, -0.4], [0.096, -0.2], [0.098, -0.05], [0.092, 0.08],
     [0.076, 0.22], [0.052, 0.35], [0.028, 0.45], [0.01, 0.51], [0.0, 0.535],
   ].map(([r, y]) => new THREE.Vector2(r, y));
-  // 8 facets → a stealth, knife-edged hull instead of a smooth tube
-  const bodyGeo = new THREE.LatheGeometry(profile, 8);
+  // smooth, high-segment hull (clean reflections)
+  const bodyGeo = new THREE.LatheGeometry(profile, 72);
   bodyGeo.rotateZ(-Math.PI / 2);
   bodyGeo.scale(1, 0.72, 1);
   add(bodyGeo, hull);
 
+  // energy strips following the hull curve on both flanks (cyan low, pink high near the cockpit)
+  const radiusAt = (x: number) => {
+    for (let i = 0; i < profile.length - 1; i++) {
+      const a = profile[i];
+      const b = profile[i + 1];
+      if (x >= a.y && x <= b.y) return a.x + ((b.x - a.x) * (x - a.y)) / (b.y - a.y);
+    }
+    return 0;
+  };
+  const strip = (x0: number, x1: number, angle: number, side: number, mat: THREE.Material, r = 0.0032) => {
+    const pts: THREE.Vector3[] = [];
+    for (let i = 0; i <= 24; i++) {
+      const x = x0 + ((x1 - x0) * i) / 24;
+      const rad = radiusAt(x) * 1.015;
+      pts.push(new THREE.Vector3(x, 0.72 * rad * Math.sin(angle), side * rad * Math.cos(angle)));
+    }
+    add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 48, r, 6), mat);
+  };
+  for (const s of [1, -1]) {
+    strip(-0.44, 0.34, -0.42, s, lightStrip);
+    strip(-0.05, 0.3, 0.42, s, lightStripPink, 0.0024);
+  }
   // Nose tip (chrome) + sensor ring
   const tip = new THREE.ConeGeometry(0.012, 0.05, 24);
   tip.rotateZ(-Math.PI / 2);
@@ -337,6 +322,16 @@ export function buildShip(): Ship {
     lm.rotation.order = "YXZ"; // lay along Z first, then sweep back with the wing
     lm.rotation.x = Math.PI / 2;
     lm.rotation.y = -0.633 * s;
+    // glowing inlay on the upper wing surface, parallel to the leading edge
+    const inlay = add(new THREE.BoxGeometry(0.0045, 0.002, 0.5), lightStrip, -0.1, -0.0065, 0.285 * s);
+    inlay.rotation.y = -0.633 * s;
+    const inlay2 = add(new THREE.BoxGeometry(0.003, 0.002, 0.3), lightStripPink, -0.2, -0.0065, 0.25 * s);
+    inlay2.rotation.y = -0.633 * s;
+    // and on the underside (the side you see most in the hero)
+    const under = add(new THREE.BoxGeometry(0.0045, 0.002, 0.5), lightStrip, -0.1, -0.0315, 0.285 * s);
+    under.rotation.y = -0.633 * s;
+    const under2 = add(new THREE.BoxGeometry(0.003, 0.002, 0.3), lightStripPink, -0.2, -0.0315, 0.25 * s);
+    under2.rotation.y = -0.633 * s;
     // wingtip blade: a vertical spike above and below the wing
     const bladeShape = new THREE.Shape();
     bladeShape.moveTo(-0.17, 0);
@@ -418,7 +413,7 @@ export function buildShip(): Ship {
 
   // Glowing band
   const band = new THREE.Mesh(
-    new THREE.TorusGeometry(0.1, 0.0035, 4, 8),
+    new THREE.TorusGeometry(0.1, 0.0035, 8, 72),
     new THREE.MeshBasicMaterial({ color: 0x5fe3ff, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending }),
   );
   band.rotation.y = Math.PI / 2;

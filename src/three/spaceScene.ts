@@ -102,8 +102,8 @@ function buildSea(cols: number, rows: number) {
     uPR: { value: 1 },
     uOpacity: { value: 1 },
     uRipples: { value: Array.from({ length: RIPPLES }, () => new THREE.Vector4(0, 0, -99, 0)) },
-    uColA: { value: new THREE.Color(0x5fe3ff) },
-    uColB: { value: new THREE.Color(0x5a4fd6) },
+    uColA: { value: new THREE.Color(0x3aa9cc) },
+    uColB: { value: new THREE.Color(0x3a32a0) },
     uColHot: { value: new THREE.Color(0xff8fd8) },
   };
   const mat = new THREE.ShaderMaterial({
@@ -266,6 +266,7 @@ export function createSpaceScene({ canvas, measure, onReady, onFail }: SpaceOpti
   body.add(ship.group);
   rig.add(body);
   rig.rotation.order = "XYZ";
+  body.rotation.order = "YXZ";
   scene.add(rig);
 
   /* layout */
@@ -333,20 +334,70 @@ export function createSpaceScene({ canvas, measure, onReady, onFail }: SpaceOpti
     sea.uniforms.uRipples.value[rippleIndex].set(hit.x, hit.z, time, strength);
     rippleIndex = (rippleIndex + 1) % RIPPLES;
   };
+  /* drag-to-rotate: grab the ship with the mouse and spin it 360° to inspect it */
+  const html = document.documentElement;
+  const spin = { yaw: 0, pitch: 0 };
+  const spinV = { yaw: 0, pitch: 0 };
+  const drag = { active: false, x: 0, y: 0, t: 0 };
+  let releasedAt = -10;
+  let hoverCheck: { x: number; y: number } | null = null;
+  const overShip = (clientX: number, clientY: number) => {
+    ndc.set((clientX / W) * 2 - 1, -(clientY / H) * 2 + 1);
+    ray.setFromCamera(ndc, camera);
+    return ray.intersectObject(ship.group, true).length > 0;
+  };
+  const SPIN = 0.011; // radians per pixel
+
   const onMove = (e: PointerEvent) => {
     pointer.u = e.clientX / W;
     pointer.v = e.clientY / H;
     pointer.tx = pointer.u * 2 - 1;
     pointer.ty = pointer.v * 2 - 1;
     pointer.inside = true;
-    if (e.pointerType === "mouse") spawnRipple(e.clientX, e.clientY, 0.45);
+    if (drag.active) {
+      const dx = e.clientX - drag.x;
+      const dy = e.clientY - drag.y;
+      const now = performance.now();
+      const dts = Math.max(0.008, (now - drag.t) / 1000);
+      spin.yaw += dx * SPIN;
+      spin.pitch += dy * SPIN;
+      spinV.yaw = (dx * SPIN) / dts;
+      spinV.pitch = (dy * SPIN) / dts;
+      drag.x = e.clientX;
+      drag.y = e.clientY;
+      drag.t = now;
+      return;
+    }
+    if (e.pointerType === "mouse") {
+      hoverCheck = { x: e.clientX, y: e.clientY }; // resolved once per frame
+      spawnRipple(e.clientX, e.clientY, 0.45);
+    }
   };
   const onDown = (e: PointerEvent) => {
     // don't steal clicks meant for UI; only waves from the backdrop / non-interactive areas
     const t = e.target as HTMLElement | null;
-    if (t?.closest("a,button,input,[role=option],.glass,.console")) return;
+    if (t?.closest("a,button,input,[role=option],.glass,.console,.hud,.launch")) return;
+    if (e.pointerType !== "touch" && e.button === 0 && overShip(e.clientX, e.clientY)) {
+      drag.active = true;
+      drag.x = e.clientX;
+      drag.y = e.clientY;
+      drag.t = performance.now();
+      spinV.yaw = spinV.pitch = 0;
+      html.classList.add("ship-dragging");
+      return;
+    }
     spawnRipple(e.clientX, e.clientY, 1.5);
   };
+  const onUp = () => {
+    if (!drag.active) return;
+    drag.active = false;
+    releasedAt = time;
+    html.classList.remove("ship-dragging");
+    // a release after holding still shouldn't fling
+    if (performance.now() - drag.t > 90) spinV.yaw = spinV.pitch = 0;
+  };
+  window.addEventListener("pointerup", onUp);
+  window.addEventListener("pointercancel", onUp);
   const onLeave = () => {
     pointer.inside = false;
     pointer.tx = 0;
@@ -432,8 +483,8 @@ export function createSpaceScene({ canvas, measure, onReady, onFail }: SpaceOpti
     // sea: sinks and fades in the middle chapters, comes back (pink) at night
     sea.uniforms.uTime.value = time;
     seaGroup.position.y = -1.55 - toViolet * 2.2 * (1 - toNight) - toNight * 0.5;
-    sea.uniforms.uOpacity.value = (1 - toViolet * 0.7) * (1 - toNight) + toNight * 0.75;
-    sea.uniforms.uColA.value.setHex(0x5fe3ff).lerp(new THREE.Color(0xff8fd8), toNight * 0.7);
+    sea.uniforms.uOpacity.value = ((1 - toViolet * 0.7) * (1 - toNight) + toNight * 0.75) * 0.8;
+    sea.uniforms.uColA.value.setHex(0x3aa9cc).lerp(new THREE.Color(0xd16cb4), toNight * 0.7);
 
     // planets drift with scroll (parallax), slightly dimmed behind the reading sections
     const screens = y / Math.max(1, H);
@@ -463,6 +514,28 @@ export function createSpaceScene({ canvas, measure, onReady, onFail }: SpaceOpti
       cur.pitch - bank * 0.25 - pointer.ty * 0.12 * heroLook,
     );
     body.scale.setScalar(cur.s * fh);
+
+    // inspect spin: free while dragging, inertia after release, then glide home to the flight pose
+    if (hoverCheck && !drag.active) {
+      html.classList.toggle("ship-grab", overShip(hoverCheck.x, hoverCheck.y));
+      hoverCheck = null;
+    }
+    if (!drag.active) {
+      spin.yaw += spinV.yaw * dt;
+      spin.pitch += spinV.pitch * dt;
+      const damp = Math.exp(-3 * dt);
+      spinV.yaw *= damp;
+      spinV.pitch *= damp;
+      if (time - releasedAt > 1.5) {
+        // shortest way back
+        spin.yaw = Math.atan2(Math.sin(spin.yaw), Math.cos(spin.yaw));
+        spin.pitch = Math.atan2(Math.sin(spin.pitch), Math.cos(spin.pitch));
+        const k = 1 - Math.exp(-2.2 * dt);
+        spin.yaw -= spin.yaw * k;
+        spin.pitch -= spin.pitch * k;
+      }
+    }
+    body.rotation.set(spin.pitch, spin.yaw, 0);
     // escorts join once you leave the hero; distant traffic crosses the sky
     escorts.update(dt, time, rig.position, cur.s * fh, y > 0.3 * H, fw, fh);
     traffic.update(dt, screens, camera.aspect);
@@ -516,6 +589,9 @@ export function createSpaceScene({ canvas, measure, onReady, onFail }: SpaceOpti
     window.removeEventListener(WARP_EVENT, onWarp);
     window.removeEventListener("pointermove", onMove);
     window.removeEventListener("pointerdown", onDown);
+    window.removeEventListener("pointerup", onUp);
+    window.removeEventListener("pointercancel", onUp);
+    html.classList.remove("ship-dragging", "ship-grab");
     document.documentElement.removeEventListener("pointerleave", onLeave);
     document.removeEventListener("visibilitychange", onVisibility);
     canvas.removeEventListener("webglcontextlost", onLost);
